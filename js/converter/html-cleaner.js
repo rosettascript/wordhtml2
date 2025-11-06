@@ -79,6 +79,10 @@ const HtmlCleaner = {
         this.removeStrongInsideHeadings(container);
         console.log('✅ Step 7.6: Removed redundant strong inside headings');
 
+        // Step 7.7: Normalize whitespace in anchor tags (mutate in place)
+        this.normalizeAnchorWhitespace(container);
+        console.log('✅ Step 7.7: Normalized anchor tag whitespace');
+
         // Step 8: Check and fix reversed document order (if needed)
         const fixedContainer = this.fixReversedDocumentOrderDOM(container);
         
@@ -107,6 +111,7 @@ const HtmlCleaner = {
 
     /**
      * Remove Word-specific attributes from all elements (DOM-based, mutates in place)
+     * Preserves border, padding, and margin styles while removing Word-specific styles
      * @param {HTMLElement} container - Container element
      */
     removeWordAttributes(container) {
@@ -118,9 +123,60 @@ const HtmlCleaner = {
                 const name = attr.name.toLowerCase();
                 const value = attr.value.toLowerCase();
                 
-                // Remove style attributes
+                // Handle style attributes - preserve borders, padding, and margin while removing Word-specific styles
                 if (name === 'style') {
-                    attrsToRemove.push(name);
+                    const styleValue = el.getAttribute('style') || '';
+                    if (styleValue) {
+                        // Filter style properties: keep borders, padding, margin; remove Word-specific styles
+                        const preservedStyles = [];
+                        const styleDeclarations = styleValue.split(';').map(s => s.trim()).filter(s => s);
+                        
+                        styleDeclarations.forEach(declaration => {
+                            const colonIndex = declaration.indexOf(':');
+                            if (colonIndex === -1) return;
+                            
+                            const property = declaration.substring(0, colonIndex).trim().toLowerCase();
+                            const propValue = declaration.substring(colonIndex + 1).trim();
+                            
+                            // Preserve border-related properties
+                            if (property.startsWith('border')) {
+                                preservedStyles.push(declaration);
+                            }
+                            // Preserve padding-related properties
+                            else if (property.startsWith('padding')) {
+                                preservedStyles.push(declaration);
+                            }
+                            // Preserve margin-related properties
+                            else if (property.startsWith('margin')) {
+                                preservedStyles.push(declaration);
+                            }
+                            // Remove Word-specific styles (mso-*, page-break, etc.)
+                            else if (property.startsWith('mso-') || 
+                                     property.startsWith('o:') ||
+                                     property.includes('page-break') ||
+                                     property.includes('tab-stops') ||
+                                     (property.includes('text-indent') && propValue.includes('mso'))) {
+                                // Skip Word-specific styles
+                            }
+                            // Remove other formatting styles that should be semantic (font-weight, font-style)
+                            // These should have been converted to <strong>/<em> tags already
+                            else if (property === 'font-weight' || property === 'font-style') {
+                                // Skip - should have been converted to semantic tags
+                            }
+                            // Remove all other styles (they're Word-specific formatting)
+                            // We preserve borders, padding, and margin as they're structural/layout properties
+                        });
+                        
+                        // If we have preserved styles, update the style attribute
+                        if (preservedStyles.length > 0) {
+                            el.setAttribute('style', preservedStyles.join('; '));
+                        } else {
+                            // No preserved styles, remove the style attribute entirely
+                            attrsToRemove.push(name);
+                        }
+                    } else {
+                        attrsToRemove.push(name);
+                    }
                 }
                 // Remove Word classes
                 else if (name === 'class' && (value.includes('mso') || value.includes('mso'))) {
@@ -489,6 +545,61 @@ const HtmlCleaner = {
                 }
                 parent.replaceChild(fragment, strong);
             });
+        });
+    },
+
+    /**
+     * Normalize whitespace in anchor tag content
+     * Removes leading/trailing whitespace and collapses multiple spaces to single spaces
+     * @param {HTMLElement} container - Container element
+     */
+    normalizeAnchorWhitespace(container) {
+        const anchors = Array.from(container.querySelectorAll('a'));
+        anchors.forEach(anchor => {
+            // Check if anchor has only text nodes (no nested elements)
+            const hasOnlyText = Array.from(anchor.childNodes).every(node => node.nodeType === 3);
+            
+            if (hasOnlyText) {
+                // Simple case: anchor contains only text, normalize the entire text content
+                const text = anchor.textContent || anchor.innerText || '';
+                const normalized = text.trim().replace(/\s+/g, ' ');
+                anchor.textContent = normalized;
+            } else {
+                // Anchor has nested elements (like <strong>, <em>), normalize text nodes individually
+                // Get all text nodes within the anchor
+                const walker = document.createTreeWalker(
+                    anchor,
+                    NodeFilter.SHOW_TEXT,
+                    null,
+                    false
+                );
+                
+                const textNodes = [];
+                let node;
+                while (node = walker.nextNode()) {
+                    textNodes.push(node);
+                }
+                
+                // Normalize each text node, but preserve single spaces between elements
+                textNodes.forEach((textNode, index) => {
+                    let text = textNode.textContent;
+                    
+                    // For first text node, trim leading whitespace
+                    if (index === 0) {
+                        text = text.replace(/^\s+/, '');
+                    }
+                    
+                    // For last text node, trim trailing whitespace
+                    if (index === textNodes.length - 1) {
+                        text = text.replace(/\s+$/, '');
+                    }
+                    
+                    // Collapse multiple spaces to single space
+                    text = text.replace(/\s+/g, ' ');
+                    
+                    textNode.textContent = text;
+                });
+            }
         });
     },
 
