@@ -1,0 +1,103 @@
+/* Toolbar CSS */
+
+.toolbar-area {
+    background-color: #fff;
+    border-radius: 0;
+    padding: 20px;
+    margin: 10px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    height: fit-content;
+    align-self: flex-start;
+}
+
+.toolbar-section {
+    margin-bottom: 25px;
+}
+
+.toolbar-section:last-child {
+    margin-bottom: 0;
+}
+
+.toolbar-section h2 {
+    font-size: 1.2em;
+    color: #0F172A;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #E2E8F0;
+    font-weight: 600;
+}
+
+.toolbar-group {
+    margin-bottom: 15px;
+}
+
+.toolbar-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #334155;
+    font-size: 0.95em;
+}
+
+.mode-select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #E5E7EB;
+    border-radius: 6px;
+    font-size: 1em;
+    background-color: #fff;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.mode-select:hover {
+    border-color: #D1D5DB;
+}
+
+.mode-select:focus {
+    outline: none;
+    border-color: #14B8A6;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.shopify-options {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #F3F4F6;
+    border-radius: 6px;
+    border: 1px solid #E5E7EB;
+}
+
+.option-checkbox {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.option-checkbox:checked {
+    accent-color: #14B8A6;
+}
+
+.custom-css-input {
+    width: 100%;
+    min-height: 200px;
+    padding: 12px;
+    border: 2px solid #E5E7EB;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+.custom-css-input:hover {
+    border-color: #D1D5DB;
+}
+
+.custom-css-input:focus {
+    outline: none;
+    border-color: #14B8A6;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+
+

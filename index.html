@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordHTML2 - Word to HTML Converter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/input-area.css">
+    <link rel="stylesheet" href="css/output-area.css">
+    <link rel="stylesheet" href="css/toolbar.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>WordHTML2</h1>
+            <p class="subtitle">Convert Word Documents to HTML</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Toolbar Area -->
+            <aside class="toolbar-area">
+                <div class="toolbar-section">
+                    <h2>Settings</h2>
+                    
+                    <div class="toolbar-group">
+                        <label for="mode-select">Output Mode:</label>
+                        <select id="mode-select" class="mode-select">
+                            <option value="regular">Regular</option>
+                            <option value="shopify">Shopify Blogs</option>
+                        </select>
+                    </div>
+
+                    <div id="shopify-options" class="shopify-options" style="display: none;">
+                        <div class="toolbar-group">
+                            <label>
+                                <input type="checkbox" id="sop" class="option-checkbox" value="sop">
+                                SOP (Standard Operating Procedure)
+                            </label>
+                            <div id="sop-sub-options" class="sop-sub-options" style="display: none; margin-left: 20px; margin-top: 8px;">
+                                <label>
+                                    <input type="checkbox" id="sop-remove-spacing" class="option-checkbox" value="remove-spacing">
+                                    Remove Spacing
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="toolbar-section">
+                        <h2>Custom CSS</h2>
+                        <textarea id="custom-css" class="custom-css-input" placeholder="Enter custom CSS here..."></textarea>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Input Area -->
+                <section class="input-area">
+                    <h2>Input Area</h2>
+                    <div id="input-editor" class="input-editor" contenteditable="true" placeholder="Paste your Word document content here..."></div>
+                </section>
+
+                <!-- Output Area -->
+                <section class="output-area">
+                    <div class="output-area-header">
+                        <h2>Output Area</h2>
+                        <div class="output-controls">
+                            <button id="preview-toggle" class="preview-toggle-button" title="Toggle Preview/Code">
+                                <svg class="icon preview-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg class="icon code-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="16 18 22 12 16 6"></polyline>
+                                    <polyline points="8 6 2 12 8 18"></polyline>
+                                </svg>
+                            </button>
+                            <button id="copy-output" class="copy-button" title="Copy HTML">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="output-display" class="output-display"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils/html-parser.js"></script>
+    <script src="js/input/paste-handler.js"></script>
+    <script src="js/converter/html-cleaner.js"></script>
+    <script src="js/converter/html-converter.js"></script>
+    <script src="js/utils/section-detector.js"></script>
+    <script src="js/shopify/key-takeaways-processor.js"></script>
+    <script src="js/shopify/body-processor.js"></script>
+    <script src="js/shopify/read-also-processor.js"></script>
+    <script src="js/shopify/faq-processor.js"></script>
+    <script src="js/shopify/sources-processor.js"></script>
+    <script src="js/shopify/shopify-transformer.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="js/output/output-renderer.js"></script>
+    <script src="js/ui/custom-css-handler.js"></script>
+    <script src="js/ui/toolbar-controller.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
+
+
+

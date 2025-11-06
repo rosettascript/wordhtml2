@@ -1,0 +1,184 @@
+/* Input Area CSS */
+
+.input-area {
+    background-color: #fff;
+    border-radius: 0;
+    padding: 20px;
+    margin: 10px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    width: 50%; /* Take half width when side by side */
+    flex: 1; /* Allow flex grow */
+    box-sizing: border-box; /* Include padding in width calculation */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid #E5E7EB;
+}
+
+.input-area h2 {
+    font-size: 1.5em;
+    color: #0F172A;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.input-hint {
+    color: #7f8c8d;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+.input-editor {
+    flex: 1; /* Take remaining space */
+    min-height: 0; /* Allow flex shrink */
+    max-width: 100%; /* Prevent content from pushing the field wider */
+    width: 100%; /* Ensure it takes full available width */
+    padding: 15px;
+    border: 2px solid #E5E7EB;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 1em;
+    line-height: 1.6;
+    overflow-y: auto;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    transition: border-color 0.3s;
+    word-wrap: break-word; /* Break long words */
+    word-break: break-word; /* Break words if needed */
+    overflow-wrap: break-word; /* Modern property for word wrapping */
+}
+
+.input-editor:hover {
+    border-color: #D1D5DB;
+}
+
+.input-editor:focus {
+    outline: none;
+    border-color: #14B8A6;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.input-editor:empty:before {
+    content: attr(placeholder);
+    color: #9CA3AF;
+    font-style: italic;
+}
+
+.input-editor[contenteditable="true"] {
+    cursor: text;
+    white-space: pre-wrap !important; /* Preserve line breaks and wrap text */
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    /* Force browser to treat as rich text, not plain text */
+    -webkit-user-modify: read-write;
+    user-modify: read-write;
+}
+
+/* Preserve whitespace for child elements but allow wrapping */
+.input-editor * {
+    white-space: pre-wrap !important; /* Preserve line breaks while allowing wrapping */
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 100%; /* Prevent elements from exceeding container width */
+    box-sizing: border-box; /* Include padding/border in width calculation */
+}
+
+/* Preserve Word formatting styles - only apply if not already set via inline styles */
+.input-editor h1,
+.input-editor h2,
+.input-editor h3,
+.input-editor h4,
+.input-editor h5,
+.input-editor h6 {
+    display: block !important; /* Force block display */
+    margin: 1em 0 0.5em 0 !important;
+    font-weight: bold !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.input-editor h1 { 
+    font-size: 2em; 
+    line-height: 1.2;
+}
+.input-editor h2 { 
+    font-size: 1.5em; 
+    line-height: 1.3;
+}
+.input-editor h3 { 
+    font-size: 1.3em; 
+    line-height: 1.4;
+}
+.input-editor h4 { 
+    font-size: 1.1em; 
+}
+.input-editor h5 { 
+    font-size: 1em; 
+}
+.input-editor h6 { 
+    font-size: 0.9em; 
+}
+
+.input-editor p {
+    display: block !important; /* Force block display */
+    margin: 0.5em 0 !important;
+    min-height: 1em; /* Prevent collapsing empty paragraphs */
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Ensure empty paragraphs maintain spacing */
+.input-editor p:empty::before {
+    content: '\200B'; /* Zero-width space to prevent collapsing */
+}
+
+.input-editor ul,
+.input-editor ol {
+    display: block !important; /* Force block display */
+    margin: 0.5em 0 !important;
+    padding-left: 2em !important;
+    list-style-type: disc !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.input-editor ol {
+    list-style-type: decimal;
+}
+
+.input-editor li {
+    display: list-item !important; /* Force list-item display */
+    margin: 0.25em 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.input-editor strong {
+    font-weight: bold;
+}
+
+.input-editor em {
+    font-style: italic;
+}
+
+.input-editor sup {
+    vertical-align: super;
+    font-size: 0.8em;
+}
+
+.input-editor sub {
+    vertical-align: sub;
+    font-size: 0.8em;
+}
+
+@media (max-width: 1024px) {
+    .input-area {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+    }
+}
+

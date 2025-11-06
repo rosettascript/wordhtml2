@@ -1,0 +1,274 @@
+/* Output Area CSS */
+
+.output-area {
+    background-color: #fff;
+    border-radius: 0;
+    padding: 20px;
+    margin: 10px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    width: 50%; /* Take half width when side by side */
+    flex: 1; /* Allow flex grow */
+    box-sizing: border-box; /* Include padding in width calculation */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.output-area-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.output-area h2 {
+    font-size: 1.5em;
+    color: #0F172A;
+    margin: 0;
+    font-weight: 600;
+}
+
+.output-controls {
+    margin: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.copy-button,
+.preview-toggle-button {
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.copy-button {
+    background: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%);
+    color: #FFFFFF;
+}
+
+.copy-button:hover {
+    background: linear-gradient(135deg, #0D9488 0%, #2DD4BF 100%);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+}
+
+.copy-button:active {
+    transform: scale(0.98);
+}
+
+.preview-toggle-button {
+    background-color: #FFFFFF;
+    color: #0F172A;
+    border: 2px solid #E5E7EB;
+}
+
+.preview-toggle-button:hover {
+    background-color: #F8FAFC;
+    border-color: #14B8A6;
+}
+
+.preview-toggle-button.active {
+    background: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%);
+    color: #FFFFFF;
+    border-color: transparent;
+}
+
+.preview-toggle-button.active:hover {
+    background: linear-gradient(135deg, #0D9488 0%, #2DD4BF 100%);
+}
+
+/* Icon styling */
+.icon {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+}
+
+/* Preview toggle icon visibility */
+.preview-toggle-button .preview-icon {
+    display: block;
+}
+
+.preview-toggle-button .code-icon {
+    display: none;
+}
+
+.preview-toggle-button.active .preview-icon {
+    display: none;
+}
+
+.preview-toggle-button.active .code-icon {
+    display: block;
+}
+
+.output-display {
+    flex: 1; /* Take remaining space */
+    min-height: 0; /* Allow flex shrink */
+    max-width: 100%; /* Prevent content from pushing the field wider */
+    width: 100%; /* Ensure it takes full available width */
+    padding: 15px;
+    border: 2px solid #E5E7EB;
+    border-radius: 4px;
+    background-color: #FFFFFF;
+    overflow-y: auto;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.output-display:has(pre[class*="language-"]) {
+    padding: 0;
+}
+
+.output-display:not(.preview-mode):has(pre[class*="language-"]) {
+    padding: 0;
+}
+
+.output-display pre {
+    margin: 0;
+    padding: 0;
+    white-space: pre;
+    overflow-x: auto;
+    background-color: transparent;
+}
+
+.output-display code {
+    display: block;
+    white-space: pre;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    line-height: 1.5;
+}
+
+/* Prism.js syntax highlighting styles */
+.output-display pre[class*="language-"] {
+    margin: 0;
+    padding: 15px;
+    background: #FFFFFF;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.output-display code[class*="language-"] {
+    background: transparent;
+    padding: 0;
+    color: #0F172A;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+}
+
+/* When output contains HTML preview */
+.output-display.preview-mode {
+    background-color: #fff;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    white-space: normal;
+    padding: 15px;
+}
+
+.output-display.preview-mode * {
+    max-width: 100%;
+}
+
+.preview-container {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* Preserve whitespace in paragraphs and text elements */
+.preview-container p {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0.5em 0;
+    min-height: 1em;
+    display: block;
+}
+
+/* Ensure empty paragraphs still take up space */
+.preview-container p:empty {
+    min-height: 1em;
+    display: block;
+}
+
+/* Preserve spacing in other elements */
+.preview-container h1,
+.preview-container h2,
+.preview-container h3,
+.preview-container h4,
+.preview-container h5,
+.preview-container h6 {
+    margin: 1em 0 0.5em 0;
+    display: block;
+    font-weight: bold;
+}
+
+.preview-container h1 { font-size: 2em; }
+.preview-container h2 { font-size: 1.5em; }
+.preview-container h3 { font-size: 1.3em; }
+.preview-container h4 { font-size: 1.1em; }
+.preview-container h5 { font-size: 1em; }
+.preview-container h6 { font-size: 0.9em; }
+
+.preview-container pre {
+    white-space: pre;
+    overflow-x: auto;
+}
+
+/* Style lists properly */
+.preview-container ul,
+.preview-container ol {
+    margin: 0.5em 0;
+    padding-left: 2em;
+    display: block;
+    list-style-position: outside;
+}
+
+.preview-container ul {
+    list-style-type: disc;
+}
+
+.preview-container ol {
+    list-style-type: decimal;
+}
+
+.preview-container li {
+    display: list-item;
+    margin: 0.25em 0;
+    padding-left: 0.5em;
+}
+
+.preview-container ul ul,
+.preview-container ol ol,
+.preview-container ul ol,
+.preview-container ol ul {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+}
+
+.preview-container img {
+    max-width: 100%;
+    height: auto;
+}
+
+@media (max-width: 1024px) {
+    .output-area {
+        width: 100%;
+        height: auto;
+    }
+}
+
+
