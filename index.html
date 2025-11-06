@@ -15,34 +15,68 @@
 </head>
 <body>
     <div class="app-container">
-        <header class="app-header">
-            <h1>WordHTML2</h1>
-            <p class="subtitle">Convert Word Documents to HTML</p>
-        </header>
-
-        <div class="main-content">
-            <!-- Toolbar Area -->
-            <aside class="toolbar-area">
+        <!-- Sidebar with Toolbar -->
+        <aside class="toolbar-area" id="toolbar-area">
+            <div class="toolbar-header">
+                <h1 class="toolbar-title">WordHTML2</h1>
+                <div class="toolbar-header-controls">
+                    <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                        <svg class="icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <svg class="icon moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="true">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <div class="toolbar-content">
                 <div class="toolbar-section">
-                    <h2>Settings</h2>
-                    
                     <div class="toolbar-group">
                         <label for="mode-select">Output Mode:</label>
-                        <select id="mode-select" class="mode-select">
+                        <select id="mode-select" class="mode-select" aria-label="Select output mode">
                             <option value="regular">Regular</option>
                             <option value="shopify">Shopify Blogs</option>
                         </select>
+                        <span id="mode-badge" class="mode-badge" aria-live="polite">Regular</span>
+                    </div>
+
+                    <div id="format-info" class="format-info" style="display: none;" role="region" aria-label="Format transformation details">
+                        <div class="format-info-header">
+                            <div class="format-info-title">This format will:</div>
+                            <button class="format-info-toggle" aria-label="Toggle format details" aria-expanded="true">
+                                <svg class="icon chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                        <ul class="format-info-list" id="format-info-list"></ul>
                     </div>
 
                     <div id="shopify-options" class="shopify-options" style="display: none;">
                         <div class="toolbar-group">
                             <label>
-                                <input type="checkbox" id="sop" class="option-checkbox" value="sop">
+                                <input type="checkbox" id="sop" class="option-checkbox" value="sop" aria-label="Enable SOP (Standard Operating Procedure)">
                                 SOP (Standard Operating Procedure)
                             </label>
-                            <div id="sop-sub-options" class="sop-sub-options" style="display: none; margin-left: 20px; margin-top: 8px;">
-                                <label>
-                                    <input type="checkbox" id="sop-remove-spacing" class="option-checkbox" value="remove-spacing">
+                            <div id="sop-sub-options" class="sop-sub-options" style="display: none; margin-left: 20px; margin-top: 8px;" role="group" aria-labelledby="sop-label">
+                                <label id="sop-label">
+                                    <input type="checkbox" id="sop-remove-spacing" class="option-checkbox" value="remove-spacing" aria-label="Remove spacing in SOP mode">
                                     Remove Spacing
                                 </label>
                             </div>
@@ -50,26 +84,65 @@
                     </div>
 
                     <div class="toolbar-section">
-                        <h2>Custom CSS</h2>
-                        <textarea id="custom-css" class="custom-css-input" placeholder="Enter custom CSS here..."></textarea>
+                        <div class="toolbar-section-header">
+                            <h2>Custom CSS</h2>
+                            <button id="css-maximize-btn" class="css-maximize-button" title="Maximize CSS editor" aria-label="Maximize CSS editor">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="css-editor-wrapper">
+                            <div class="css-editor-line-numbers" id="css-line-numbers" aria-hidden="true"></div>
+                            <textarea id="custom-css" class="custom-css-input" placeholder="Enter custom CSS here..." aria-label="Custom CSS input" spellcheck="false"></textarea>
+                        </div>
                     </div>
+                </div>
                 </div>
             </aside>
 
+        <!-- Main Content Area -->
+        <div class="main-content">
             <!-- Content Area -->
             <div class="content-area">
-                <!-- Input Area -->
+                <!-- Source Section -->
                 <section class="input-area">
-                    <h2>Input Area</h2>
-                    <div id="input-editor" class="input-editor" contenteditable="true" placeholder="Paste your Word document content here..."></div>
+                    <div class="input-area-header">
+                        <div class="input-area-title-group">
+                            <h2>Source <span id="input-count" class="input-count" aria-live="polite" aria-atomic="true"></span></h2>
+                        </div>
+                        <button id="clear-input" class="clear-input-button" title="Clear input (Ctrl+K)" aria-label="Clear input">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="input-wrapper">
+                        <div id="input-empty-state" class="empty-state input-empty-state">
+                            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            <h3 class="empty-state-title">Paste Your Word Document</h3>
+                            <p class="empty-state-description">Copy content from Microsoft Word and paste it here. The app will automatically convert it to clean HTML.</p>
+                            <div class="empty-state-tip">
+                                <strong>Tip:</strong> Use Ctrl+V (or Cmd+V on Mac) to paste
+                            </div>
+                        </div>
+                        <div id="input-editor" class="input-editor" contenteditable="true" placeholder="Paste your Word document content here..." role="textbox" aria-label="Input area for Word document content" aria-multiline="true"></div>
+                    </div>
                 </section>
 
-                <!-- Output Area -->
+                <!-- HTML Output Section -->
                 <section class="output-area">
                     <div class="output-area-header">
-                        <h2>Output Area</h2>
+                        <h2>HTML</h2>
                         <div class="output-controls">
-                            <button id="preview-toggle" class="preview-toggle-button" title="Toggle Preview/Code">
+                            <button id="preview-toggle" class="preview-toggle-button" title="Toggle Preview/Code (Ctrl+P)" aria-label="Toggle between preview and code view" aria-pressed="false">
                                 <svg class="icon preview-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                     <circle cx="12" cy="12" r="3"></circle>
@@ -79,7 +152,14 @@
                                     <polyline points="8 6 2 12 8 18"></polyline>
                                 </svg>
                             </button>
-                            <button id="copy-output" class="copy-button" title="Copy HTML">
+                            <button id="download-output" class="download-button" title="Download HTML (Ctrl+D)" aria-label="Download HTML">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </button>
+                            <button id="copy-output" class="copy-button" title="Copy HTML (Ctrl+C)" aria-label="Copy HTML">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -87,8 +167,59 @@
                             </button>
                         </div>
                     </div>
-                    <div id="output-display" class="output-display"></div>
+                    <div class="output-wrapper">
+                        <div id="output-empty-state" class="empty-state output-empty-state">
+                            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 6 2 12 8 18"></polyline>
+                            </svg>
+                            <h3 class="empty-state-title">HTML Output Will Appear Here</h3>
+                            <p class="empty-state-description">Once you paste content in the input area, the converted HTML will be displayed here.</p>
+                            <div class="empty-state-tip">
+                                <strong>Tip:</strong> Toggle between code view and preview mode using the preview button
+                            </div>
+                        </div>
+                        <div id="output-display" class="output-display"></div>
+                    </div>
                 </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSS Editor Modal -->
+    <div id="css-editor-modal" class="css-editor-modal" role="dialog" aria-labelledby="css-modal-title" aria-modal="true">
+        <div class="css-editor-modal-overlay"></div>
+        <div class="css-editor-modal-content">
+            <div class="css-editor-modal-header">
+                <h3 id="css-modal-title" class="css-editor-modal-title">Custom CSS Editor</h3>
+                <button id="css-minimize-btn" class="css-minimize-button" title="Minimize CSS editor" aria-label="Minimize CSS editor">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="css-editor-modal-body">
+                <div class="css-editor-wrapper css-editor-wrapper-large">
+                    <div class="css-editor-line-numbers" id="css-line-numbers-modal" aria-hidden="true"></div>
+                    <textarea id="custom-css-modal" class="custom-css-input" placeholder="Enter custom CSS here..." aria-label="Custom CSS input" spellcheck="false"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="custom-modal" class="custom-modal" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title" class="modal-title">Confirm Action</h3>
+            </div>
+            <div class="modal-body">
+                <p id="modal-message" class="modal-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-cancel" class="modal-button modal-button-secondary">Cancel</button>
+                <button id="modal-confirm" class="modal-button modal-button-primary">Confirm</button>
             </div>
         </div>
     </div>
@@ -111,6 +242,9 @@
     <script src="js/output/output-renderer.js"></script>
     <script src="js/ui/custom-css-handler.js"></script>
     <script src="js/ui/toolbar-controller.js"></script>
+    <script src="js/ui/feedback-handler.js"></script>
+    <script src="js/ui/modal-handler.js"></script>
+    <script src="js/ui/keyboard-shortcuts.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

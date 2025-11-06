@@ -249,25 +249,49 @@ const ShopifyTransformer = {
             let current = keyTakeawaysHeader.nextElementSibling;
             while (current) {
                 if (current.tagName && current.tagName.toLowerCase() === 'ul') {
-                    // Add spacer after the list
-                    const spacer = document.createElement('p');
-                    spacer.innerHTML = '';
-                    current.parentNode.insertBefore(spacer, current.nextSibling);
+                    // Check if there's already a spacer after this list
+                    const nextSibling = current.nextElementSibling;
+                    const hasSpacer = nextSibling && 
+                                      nextSibling.tagName && 
+                                      nextSibling.tagName.toLowerCase() === 'p' &&
+                                      (!nextSibling.textContent || nextSibling.textContent.trim() === '');
+                    
+                    // Only add spacer if one doesn't already exist
+                    if (!hasSpacer) {
+                        // Add spacer after the list
+                        // Use &nbsp; to ensure it's not removed as empty
+                        const spacer = document.createElement('p');
+                        spacer.innerHTML = '&nbsp;';
+                        current.parentNode.insertBefore(spacer, current.nextSibling);
+                    }
                     break;
                 }
                 current = current.nextElementSibling;
             }
         }
         
-        // Find "Read also:" paragraph and add spacer before it
+        // Find "Read also:" or "Read more:" paragraph and add spacer before it
         const paragraphs = tempDiv.querySelectorAll('p');
         for (let p of paragraphs) {
             const text = HtmlParser.getTextContent(p.innerHTML).toLowerCase().trim();
-            if (text.includes('read also') || text.includes('read also:')) {
-                // Add spacer before Read also paragraph
-                const spacer = document.createElement('p');
-                spacer.innerHTML = '';
-                p.parentNode.insertBefore(spacer, p);
+            // Match both "read also" and "read more" patterns
+            if (text.includes('read also') || text.includes('read also:') || 
+                text.includes('read more') || text.includes('read more:')) {
+                // Check if there's already a spacer before this paragraph
+                const prevSibling = p.previousElementSibling;
+                const hasSpacer = prevSibling && 
+                                  prevSibling.tagName && 
+                                  prevSibling.tagName.toLowerCase() === 'p' &&
+                                  (!prevSibling.textContent || prevSibling.textContent.trim() === '');
+                
+                // Only add spacer if one doesn't already exist
+                if (!hasSpacer) {
+                    // Add spacer before Read also/Read more paragraph
+                    // Use &nbsp; to ensure it's not removed as empty
+                    const spacer = document.createElement('p');
+                    spacer.innerHTML = '&nbsp;';
+                    p.parentNode.insertBefore(spacer, p);
+                }
                 break; // Only first one
             }
         }
@@ -481,13 +505,14 @@ const ShopifyTransformer = {
     removeExtraSpacing(html) {
         const tempDiv = HtmlParser.parseHTML(html);
         
-        // Remove all empty paragraph spacers (<p></p> or <p> </p>)
+        // Remove all empty paragraph spacers (<p></p> or <p> </p> or <p>&nbsp;</p>)
         const emptyParagraphs = tempDiv.querySelectorAll('p');
         emptyParagraphs.forEach(p => {
             const text = p.textContent || p.innerText || '';
             const innerHTML = p.innerHTML.trim();
-            // If paragraph is empty or only contains whitespace, remove it
-            if (text.trim() === '' || innerHTML === '' || innerHTML === '&nbsp;') {
+            // If paragraph is empty, only whitespace, or only &nbsp;, remove it
+            // This will remove spacers we added before "Read also" and after Key Takeaways
+            if (text.trim() === '' || innerHTML === '' || innerHTML === '&nbsp;' || innerHTML === '<br>') {
                 p.remove();
             }
         });

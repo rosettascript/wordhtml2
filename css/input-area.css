@@ -1,66 +1,144 @@
 /* Input Area CSS */
 
 .input-area {
-    background-color: #fff;
-    border-radius: 0;
-    padding: 20px;
-    margin: 10px;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    width: 50%; /* Take half width when side by side */
-    flex: 1; /* Allow flex grow */
-    box-sizing: border-box; /* Include padding in width calculation */
+    background-color: var(--bg-surface);
+    padding: var(--spacing-2xl);
+    margin: 0;
+    width: 50%;
+    flex: 1;
+    box-sizing: border-box;
     height: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border-right: 1px solid #E5E7EB;
+}
+
+.input-wrapper {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-area-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    gap: var(--spacing-md);
+}
+
+.input-area-title-group {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--spacing-md);
+    flex: 1;
 }
 
 .input-area h2 {
     font-size: 1.5em;
-    color: #0F172A;
-    margin-bottom: 10px;
-    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+    font-weight: var(--font-weight-semibold);
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-md);
+}
+
+.input-count {
+    font-size: 0.65em;
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-regular);
+    margin-left: var(--spacing-xs);
+}
+
+.input-count.hidden {
+    display: none;
+}
+
+.clear-input-button {
+    padding: var(--spacing-md);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    box-shadow: none;
+    background-color: var(--bg-surface);
+    color: var(--color-text);
+    position: relative;
+    overflow: hidden;
+}
+
+.clear-input-button:hover {
+    background-color: var(--bg-surface-alt);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.clear-input-button:active {
+    transform: scale(0.98);
+}
+
+.clear-input-button:focus-visible {
+    outline: none;
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 2px var(--focus-color);
+    box-shadow-opacity: var(--focus-opacity);
+}
+
+.clear-input-button .icon {
+    width: 20px;
+    height: 20px;
 }
 
 .input-hint {
-    color: #7f8c8d;
+    color: var(--color-text-secondary);
     font-size: 0.9em;
-    margin-bottom: 15px;
+    margin-bottom: var(--spacing-lg);
 }
 
 .input-editor {
-    flex: 1; /* Take remaining space */
-    min-height: 0; /* Allow flex shrink */
-    max-width: 100%; /* Prevent content from pushing the field wider */
-    width: 100%; /* Ensure it takes full available width */
-    padding: 15px;
-    border: 2px solid #E5E7EB;
-    border-radius: 4px;
-    background-color: #fff;
+    flex: 1;
+    min-height: 0;
+    max-width: 100%;
+    width: 100%;
+    padding: var(--spacing-lg);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-surface);
+    color: var(--color-text);
     font-size: 1em;
     line-height: 1.6;
     overflow-y: auto;
-    overflow-x: hidden; /* Prevent horizontal scrolling */
-    transition: border-color 0.3s;
-    word-wrap: break-word; /* Break long words */
-    word-break: break-word; /* Break words if needed */
-    overflow-wrap: break-word; /* Modern property for word wrapping */
+    overflow-x: hidden;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .input-editor:hover {
-    border-color: #D1D5DB;
+    border-color: var(--color-accent);
+    background-color: var(--bg-surface-alt);
 }
 
 .input-editor:focus {
     outline: none;
-    border-color: #14B8A6;
-    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 2px var(--focus-color);
+    box-shadow-opacity: var(--focus-opacity);
 }
 
 .input-editor:empty:before {
     content: attr(placeholder);
-    color: #9CA3AF;
+    color: var(--color-text-muted);
     font-style: italic;
 }
 
@@ -83,6 +161,29 @@
     overflow-wrap: break-word !important;
     max-width: 100%; /* Prevent elements from exceeding container width */
     box-sizing: border-box; /* Include padding/border in width calculation */
+    color: inherit; /* Inherit text color from parent for proper dark mode support */
+}
+
+/* Force text color in dark mode, overriding inline styles from Word */
+[data-theme="dark"] .input-editor,
+[data-theme="dark"] .input-editor * {
+    color: var(--color-text) !important;
+}
+
+/* Ensure specific elements have proper color in dark mode */
+[data-theme="dark"] .input-editor p,
+[data-theme="dark"] .input-editor span,
+[data-theme="dark"] .input-editor div,
+[data-theme="dark"] .input-editor h1,
+[data-theme="dark"] .input-editor h2,
+[data-theme="dark"] .input-editor h3,
+[data-theme="dark"] .input-editor h4,
+[data-theme="dark"] .input-editor h5,
+[data-theme="dark"] .input-editor h6,
+[data-theme="dark"] .input-editor li,
+[data-theme="dark"] .input-editor td,
+[data-theme="dark"] .input-editor th {
+    color: var(--color-text) !important;
 }
 
 /* Preserve Word formatting styles - only apply if not already set via inline styles */
@@ -97,6 +198,17 @@
     font-weight: bold !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    color: var(--color-text) !important; /* Ensure headings use proper text color for dark mode */
+}
+
+/* Remove top margin from first heading if it's the first element */
+.input-editor > h1:first-child,
+.input-editor > h2:first-child,
+.input-editor > h3:first-child,
+.input-editor > h4:first-child,
+.input-editor > h5:first-child,
+.input-editor > h6:first-child {
+    margin-top: 0 !important;
 }
 
 .input-editor h1 { 
@@ -127,6 +239,12 @@
     min-height: 1em; /* Prevent collapsing empty paragraphs */
     width: 100% !important;
     box-sizing: border-box !important;
+    color: var(--color-text) !important; /* Ensure paragraphs use proper text color for dark mode */
+}
+
+/* Remove top margin from first element to eliminate gap at top */
+.input-editor > *:first-child {
+    margin-top: 0 !important;
 }
 
 /* Ensure empty paragraphs maintain spacing */
@@ -144,6 +262,12 @@
     box-sizing: border-box !important;
 }
 
+/* Remove top margin from first list if it's the first element */
+.input-editor > ul:first-child,
+.input-editor > ol:first-child {
+    margin-top: 0 !important;
+}
+
 .input-editor ol {
     list-style-type: decimal;
 }
@@ -153,6 +277,7 @@
     margin: 0.25em 0 !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    color: var(--color-text) !important; /* Ensure list items use proper text color for dark mode */
 }
 
 .input-editor strong {
@@ -173,12 +298,86 @@
     font-size: 0.8em;
 }
 
+/* Empty State Styles */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-4xl) var(--spacing-2xl);
+    text-align: center;
+    color: var(--color-text-secondary);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.empty-state.hidden {
+    opacity: 0;
+    pointer-events: none;
+    display: none;
+}
+
+.empty-state-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-text-muted);
+    stroke: currentColor;
+    fill: none;
+}
+
+.empty-state-title {
+    font-size: 1.25em;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin: 0 0 var(--spacing-sm) 0;
+}
+
+.empty-state-description {
+    font-size: 0.95em;
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--spacing-lg) 0;
+    max-width: 400px;
+    line-height: 1.6;
+}
+
+.empty-state-tip {
+    font-size: 0.85em;
+    color: var(--color-text-secondary);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--bg-surface-alt);
+    border-radius: var(--radius-md);
+    margin-top: var(--spacing-sm);
+}
+
+.empty-state-tip strong {
+    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+}
+
+.input-empty-state {
+    background-color: var(--bg-surface-alt);
+    border: var(--border-width) dashed var(--border-color);
+    border-radius: var(--radius-md);
+}
+
+.input-editor:not(:empty) ~ .input-empty-state,
+.input-editor:focus ~ .input-empty-state {
+    opacity: 0;
+    pointer-events: none;
+}
+
 @media (max-width: 1024px) {
     .input-area {
         width: 100%;
         height: auto;
-        border-right: none;
-        border-bottom: 1px solid #ddd;
     }
 }
 

@@ -4,6 +4,28 @@
  */
 
 const CustomCSSHandler = {
+    lineNumbersElement: null,
+    textareaElement: null,
+
+    /**
+     * Update line numbers display
+     */
+    updateLineNumbers() {
+        if (!this.textareaElement || !this.lineNumbersElement) return;
+
+        const lines = this.textareaElement.value.split('\n');
+        const lineCount = lines.length || 1;
+        
+        // Generate line numbers
+        const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1)
+            .join('\n');
+        
+        this.lineNumbersElement.textContent = lineNumbers;
+        
+        // Sync scroll position
+        this.lineNumbersElement.scrollTop = this.textareaElement.scrollTop;
+    },
+
     /**
      * Initialize custom CSS handler
      * @param {HTMLElement} textareaElement - Textarea element for custom CSS
@@ -15,26 +37,36 @@ const CustomCSSHandler = {
             return;
         }
 
-        // Listen for input changes - triggers immediately as user types
-        textareaElement.addEventListener('input', () => {
+        this.textareaElement = textareaElement;
+        this.lineNumbersElement = document.getElementById('css-line-numbers');
+
+        // Update line numbers on input
+        const updateLines = () => {
+            this.updateLineNumbers();
             const css = textareaElement.value;
             onChangeCallback(css);
-        });
+        };
+
+        // Listen for input changes - triggers immediately as user types
+        textareaElement.addEventListener('input', updateLines);
 
         // Also listen for paste events
         textareaElement.addEventListener('paste', (e) => {
             // Let paste happen, then trigger callback
             setTimeout(() => {
-                const css = textareaElement.value;
-                onChangeCallback(css);
+                updateLines();
             }, 0);
         });
         
-        // Listen for keyup as backup (in case input event doesn't fire)
-        textareaElement.addEventListener('keyup', () => {
-            const css = textareaElement.value;
-            onChangeCallback(css);
+        // Listen for scroll to sync line numbers
+        textareaElement.addEventListener('scroll', () => {
+            if (this.lineNumbersElement) {
+                this.lineNumbersElement.scrollTop = textareaElement.scrollTop;
+            }
         });
+        
+        // Initial update
+        this.updateLineNumbers();
         
         // Initial trigger to ensure CSS is applied if there's already content
         const initialCSS = textareaElement.value;
@@ -61,6 +93,10 @@ const CustomCSSHandler = {
     setCSS(textareaElement, css) {
         if (!textareaElement) return;
         textareaElement.value = css || '';
+        // Update line numbers after setting CSS
+        if (this.textareaElement === textareaElement) {
+            this.updateLineNumbers();
+        }
     }
 };
 

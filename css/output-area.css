@@ -1,15 +1,22 @@
 /* Output Area CSS */
 
 .output-area {
-    background-color: #fff;
-    border-radius: 0;
-    padding: 20px;
-    margin: 10px;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    width: 50%; /* Take half width when side by side */
-    flex: 1; /* Allow flex grow */
-    box-sizing: border-box; /* Include padding in width calculation */
+    background-color: var(--bg-surface);
+    padding: var(--spacing-2xl);
+    margin: 0;
+    width: 50%;
+    flex: 1;
+    box-sizing: border-box;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.output-wrapper {
+    position: relative;
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -19,28 +26,29 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: var(--spacing-lg);
 }
 
 .output-area h2 {
     font-size: 1.5em;
-    color: #0F172A;
+    color: var(--color-text);
     margin: 0;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .output-controls {
     margin: 0;
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: var(--spacing-md);
 }
 
 .copy-button,
+.download-button,
 .preview-toggle-button {
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
+    padding: var(--spacing-md);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-md);
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
@@ -48,43 +56,71 @@
     justify-content: center;
     width: 40px;
     height: 40px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    box-shadow: none;
+    background-color: var(--bg-surface);
+    color: var(--color-text);
+    position: relative;
+    overflow: hidden;
+}
+
+.download-button:hover {
+    background-color: var(--bg-surface-alt);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.download-button:active {
+    transform: scale(0.98);
+}
+
+.download-button:focus-visible {
+    outline: none;
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 2px var(--focus-color);
+    box-shadow-opacity: var(--focus-opacity);
 }
 
 .copy-button {
-    background: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%);
-    color: #FFFFFF;
+    background-color: var(--color-accent);
+    color: var(--bg-surface);
+    border-color: var(--color-accent);
 }
 
 .copy-button:hover {
-    background: linear-gradient(135deg, #0D9488 0%, #2DD4BF 100%);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transform: translateY(-1px);
+    background-color: var(--color-accent-alt);
+    border-color: var(--color-accent-alt);
 }
 
 .copy-button:active {
     transform: scale(0.98);
 }
 
-.preview-toggle-button {
-    background-color: #FFFFFF;
-    color: #0F172A;
-    border: 2px solid #E5E7EB;
+.copy-button.button-success {
+    background-color: var(--color-accent);
+    animation: buttonPulse 0.3s ease;
 }
 
 .preview-toggle-button:hover {
-    background-color: #F8FAFC;
-    border-color: #14B8A6;
+    background-color: var(--bg-surface-alt);
+    border-color: var(--color-accent);
 }
 
 .preview-toggle-button.active {
-    background: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%);
-    color: #FFFFFF;
-    border-color: transparent;
+    background-color: var(--color-accent);
+    color: var(--bg-surface);
+    border-color: var(--color-accent);
 }
 
 .preview-toggle-button.active:hover {
-    background: linear-gradient(135deg, #0D9488 0%, #2DD4BF 100%);
+    background-color: var(--color-accent-alt);
+    border-color: var(--color-accent-alt);
+}
+
+.preview-toggle-button:focus-visible {
+    outline: none;
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 2px var(--focus-color);
+    box-shadow-opacity: var(--focus-opacity);
 }
 
 /* Icon styling */
@@ -113,20 +149,41 @@
 }
 
 .output-display {
-    flex: 1; /* Take remaining space */
-    min-height: 0; /* Allow flex shrink */
-    max-width: 100%; /* Prevent content from pushing the field wider */
-    width: 100%; /* Ensure it takes full available width */
-    padding: 15px;
-    border: 2px solid #E5E7EB;
-    border-radius: 4px;
-    background-color: #FFFFFF;
+    flex: 1;
+    min-height: 0;
+    max-width: 100%;
+    width: 100%;
+    padding: var(--spacing-lg);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-surface);
+    color: var(--color-text);
     overflow-y: auto;
     overflow-x: auto;
     font-family: 'Courier New', monospace;
     font-size: 0.9em;
     white-space: pre-wrap;
     word-wrap: break-word;
+    position: relative;
+    z-index: 1;
+}
+
+.output-empty-state {
+    background-color: var(--bg-surface-alt);
+    border: var(--border-width) dashed var(--border-color);
+    border-radius: var(--radius-md);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    display: flex;
+    opacity: 1;
+}
+
+.output-empty-state.hidden {
+    display: none;
 }
 
 .output-display:has(pre[class*="language-"]) {
@@ -156,16 +213,16 @@
 /* Prism.js syntax highlighting styles */
 .output-display pre[class*="language-"] {
     margin: 0;
-    padding: 15px;
-    background: #FFFFFF;
-    border-radius: 4px;
+    padding: var(--spacing-lg);
+    background: var(--bg-surface);
+    border-radius: var(--radius-md);
     overflow-x: auto;
 }
 
 .output-display code[class*="language-"] {
     background: transparent;
     padding: 0;
-    color: #0F172A;
+    color: var(--color-text);
     font-family: 'Courier New', monospace;
     font-size: 0.9em;
     line-height: 1.6;
@@ -173,10 +230,10 @@
 
 /* When output contains HTML preview */
 .output-display.preview-mode {
-    background-color: #fff;
+    background-color: var(--bg-surface);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     white-space: normal;
-    padding: 15px;
+    padding: var(--spacing-lg);
 }
 
 .output-display.preview-mode * {
@@ -185,8 +242,8 @@
 
 .preview-container {
     width: 100%;
-    height: 100%;
-    overflow-y: auto;
+    min-height: 100%;
+    overflow: visible;
 }
 
 /* Preserve whitespace in paragraphs and text elements */

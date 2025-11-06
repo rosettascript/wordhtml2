@@ -20,14 +20,253 @@ document.addEventListener('DOMContentLoaded', () => {
     const sopRemoveSpacing = document.getElementById('sop-remove-spacing');
     const sopSubOptions = document.getElementById('sop-sub-options');
     const customCSSInput = document.getElementById('custom-css');
+    const inputEmptyState = document.getElementById('input-empty-state');
+    const outputEmptyState = document.getElementById('output-empty-state');
+    const clearInputButton = document.getElementById('clear-input');
+    const downloadButton = document.getElementById('download-output');
+    const inputCount = document.getElementById('input-count');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const toolbarArea = document.getElementById('toolbar-area');
+    const modeBadge = document.getElementById('mode-badge');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+
+    // Dark mode functions
+    function getThemePreference() {
+        // Check localStorage first
+        const savedTheme = localStorage.getItem('wordhtml2-theme');
+        if (savedTheme) {
+            return savedTheme;
+        }
+        // Then check system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+        return 'light';
+    }
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('wordhtml2-theme', theme);
+        
+        // Update input editor text colors to override inline styles
+        updateInputEditorColors(theme);
+    }
+    
+    function updateInputEditorColors(theme) {
+        const inputEditor = document.getElementById('input-editor');
+        if (!inputEditor) return;
+        
+        // Get all elements with inline color styles
+        const elementsWithColor = inputEditor.querySelectorAll('[style*="color"]');
+        
+        if (theme === 'dark') {
+            // In dark mode, remove or update black/dark colors
+            elementsWithColor.forEach(el => {
+                const style = el.getAttribute('style') || '';
+                // Check if color is black or very dark
+                const colorMatch = style.match(/color\s*:\s*([^;]+)/i);
+                if (colorMatch) {
+                    const colorValue = colorMatch[1].trim().toLowerCase();
+                    // Check if it's black, rgb(0,0,0), or similar
+                    if (colorValue === 'black' || 
+                        colorValue === '#000' || 
+                        colorValue === '#000000' ||
+                        colorValue.startsWith('rgb(0,0,0') ||
+                        colorValue.startsWith('rgba(0,0,0')) {
+                        // Remove the color style to let CSS take over
+                        const newStyle = style.replace(/color\s*:\s*[^;]+;?/gi, '').trim();
+                        if (newStyle) {
+                            el.setAttribute('style', newStyle);
+                        } else {
+                            el.removeAttribute('style');
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function initTheme() {
+        const theme = getThemePreference();
+        setTheme(theme);
+    }
+
+    // Load saved settings from localStorage
+    function loadSettings() {
+        try {
+            const savedMode = localStorage.getItem('wordhtml2-mode');
+            const savedCSS = localStorage.getItem('wordhtml2-custom-css');
+            
+            if (savedMode && modeSelect) {
+                modeSelect.value = savedMode;
+            }
+            
+            if (savedCSS && customCSSInput) {
+                customCSSInput.value = savedCSS;
+            }
+        } catch (e) {
+            console.warn('Failed to load settings from localStorage:', e);
+        }
+    }
+
+    // Save settings to localStorage
+    function saveSettings() {
+        try {
+            if (modeSelect) {
+                localStorage.setItem('wordhtml2-mode', modeSelect.value);
+            }
+            if (customCSSInput) {
+                localStorage.setItem('wordhtml2-custom-css', customCSSInput.value);
+            }
+        } catch (e) {
+            console.warn('Failed to save settings to localStorage:', e);
+        }
+    }
+
+    // Initialize theme
+    initTheme();
+
+    // Dark mode toggle handler
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+    }
+
+    // Listen for system theme changes
+    if (window.matchMedia) {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addEventListener('change', (e) => {
+            // Only update if user hasn't manually set a preference
+            if (!localStorage.getItem('wordhtml2-theme')) {
+                setTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+    }
+
+    // Load settings on init
+    loadSettings();
 
     // Initialize Output Renderer
     OutputRenderer.init(outputDisplay);
 
+    // Initialize Modal Handler
+    ModalHandler.init();
+
     // Initialize Custom CSS Handler
     CustomCSSHandler.init(customCSSInput, (css) => {
+        saveSettings();
         updateOutput();
     });
+
+    // CSS Editor Modal functionality
+    const cssMaximizeBtn = document.getElementById('css-maximize-btn');
+    const cssMinimizeBtn = document.getElementById('css-minimize-btn');
+    const cssEditorModal = document.getElementById('css-editor-modal');
+    const customCSSModal = document.getElementById('custom-css-modal');
+    const cssLineNumbersModal = document.getElementById('css-line-numbers-modal');
+    const cssModalOverlay = cssEditorModal?.querySelector('.css-editor-modal-overlay');
+
+    // Initialize modal CSS editor line numbers
+    function updateModalLineNumbers() {
+        if (!customCSSModal || !cssLineNumbersModal) return;
+        const lines = customCSSModal.value.split('\n');
+        const lineCount = lines.length || 1;
+        const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
+        cssLineNumbersModal.textContent = lineNumbers;
+        cssLineNumbersModal.scrollTop = customCSSModal.scrollTop;
+    }
+
+    // Sync modal textarea with sidebar textarea
+    function syncToModal() {
+        if (customCSSModal && customCSSInput) {
+            customCSSModal.value = customCSSInput.value;
+            updateModalLineNumbers();
+        }
+    }
+
+    // Sync sidebar textarea with modal textarea
+    function syncFromModal() {
+        if (customCSSInput && customCSSModal) {
+            customCSSInput.value = customCSSModal.value;
+            // Trigger update
+            const event = new Event('input', { bubbles: true });
+            customCSSInput.dispatchEvent(event);
+        }
+    }
+
+    // Open modal
+    function openCSSModal() {
+        if (!cssEditorModal) return;
+        syncToModal();
+        // Don't prevent body scrolling - modal is now a left sidebar, preview should remain accessible
+        cssEditorModal.style.display = 'flex';
+        requestAnimationFrame(() => {
+            cssEditorModal.classList.add('show');
+            if (customCSSModal) {
+                customCSSModal.focus();
+            }
+        });
+    }
+
+    // Close modal
+    function closeCSSModal() {
+        if (!cssEditorModal) return;
+        syncFromModal();
+        cssEditorModal.classList.remove('show');
+        setTimeout(() => {
+            cssEditorModal.style.display = 'none';
+        }, 300);
+    }
+
+    // Event listeners
+    if (cssMaximizeBtn) {
+        cssMaximizeBtn.addEventListener('click', openCSSModal);
+    }
+
+    if (cssMinimizeBtn) {
+        cssMinimizeBtn.addEventListener('click', closeCSSModal);
+    }
+
+    // Overlay click removed - modal is now a left sidebar, not centered
+
+    // Handle Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && cssEditorModal?.classList.contains('show')) {
+            closeCSSModal();
+        }
+    });
+
+    // Update modal line numbers on input and scroll
+    if (customCSSModal) {
+        customCSSModal.addEventListener('input', () => {
+            updateModalLineNumbers();
+            syncFromModal();
+        });
+
+        customCSSModal.addEventListener('scroll', () => {
+            if (cssLineNumbersModal) {
+                cssLineNumbersModal.scrollTop = customCSSModal.scrollTop;
+            }
+        });
+
+        customCSSModal.addEventListener('paste', () => {
+            setTimeout(() => {
+                updateModalLineNumbers();
+                syncFromModal();
+            }, 0);
+        });
+    }
+
+    // Update mode badge
+    function updateModeBadge() {
+        if (modeBadge && modeSelect) {
+            const mode = modeSelect.value;
+            modeBadge.textContent = mode === 'shopify' ? 'Shopify Blogs' : 'Regular';
+        }
+    }
 
     // Initialize Toolbar Controller
     ToolbarController.init({
@@ -37,13 +276,148 @@ document.addEventListener('DOMContentLoaded', () => {
         sopRemoveSpacing: sopRemoveSpacing,
         sopSubOptions: sopSubOptions
     }, () => {
+        saveSettings();
         updateOutput();
     });
 
+    // Save settings when mode changes
+    if (modeSelect) {
+        modeSelect.addEventListener('change', () => {
+            saveSettings();
+            updateModeBadge();
+        });
+        // Initial badge update
+        updateModeBadge();
+    }
+
+    // Save settings when custom CSS changes
+    if (customCSSInput) {
+        customCSSInput.addEventListener('input', () => {
+            saveSettings();
+        });
+    }
+
     // Initialize Paste Handler
     PasteHandler.init(inputEditor, (html) => {
+        updateEmptyStates();
         updateOutput();
     });
+
+    // Update character/word count
+    function updateInputCount() {
+        if (!inputEditor || !inputCount) return;
+        
+        const text = inputEditor.textContent || '';
+        const trimmedText = text.trim();
+        const charCount = trimmedText.length;
+        const wordCount = trimmedText.length > 0 
+            ? trimmedText.split(/\s+/).filter(word => word.length > 0).length 
+            : 0;
+        
+        if (charCount > 0) {
+            inputCount.textContent = `${charCount.toLocaleString()} ${charCount === 1 ? 'character' : 'characters'}, ${wordCount.toLocaleString()} ${wordCount === 1 ? 'word' : 'words'}`;
+            inputCount.classList.remove('hidden');
+        } else {
+            inputCount.textContent = '';
+            inputCount.classList.add('hidden');
+        }
+    }
+
+    // Update empty states visibility
+    function updateEmptyStates() {
+        // Check input area
+        if (inputEditor && inputEmptyState) {
+            const hasContent = inputEditor.textContent.trim().length > 0 || 
+                             inputEditor.innerHTML.trim().length > 0 && 
+                             inputEditor.innerHTML.trim() !== '<br>' &&
+                             inputEditor.innerHTML.trim() !== '<p><br></p>';
+            
+            if (hasContent) {
+                inputEmptyState.classList.add('hidden');
+            } else {
+                inputEmptyState.classList.remove('hidden');
+            }
+        }
+
+        // Check output area
+        if (outputDisplay && outputEmptyState) {
+            // Check for actual content (not just whitespace or empty elements)
+            const textContent = outputDisplay.textContent.trim();
+            const hasChildren = outputDisplay.children.length > 0;
+            const innerHTML = outputDisplay.innerHTML.trim();
+            
+            // Consider it empty if no text, no children, or only whitespace/empty tags
+            const hasContent = (textContent.length > 0 || hasChildren) && 
+                             innerHTML !== '' && 
+                             innerHTML !== '<br>' &&
+                             innerHTML !== '<p></p>' &&
+                             innerHTML !== '<p><br></p>';
+            
+            if (hasContent) {
+                outputEmptyState.classList.add('hidden');
+            } else {
+                outputEmptyState.classList.remove('hidden');
+            }
+        }
+        
+        // Update count
+        updateInputCount();
+    }
+
+    // Clear input button handler
+    if (clearInputButton && inputEditor) {
+        clearInputButton.addEventListener('click', async () => {
+            const hasContent = inputEditor.textContent.trim().length > 0 || 
+                             inputEditor.innerHTML.trim().length > 0 && 
+                             inputEditor.innerHTML.trim() !== '<br>' &&
+                             inputEditor.innerHTML.trim() !== '<p><br></p>';
+            
+            if (hasContent) {
+                const confirmed = await ModalHandler.show(
+                    'Clear Input',
+                    'Are you sure you want to clear the input? This action cannot be undone.',
+                    'Clear',
+                    'Cancel'
+                );
+                
+                if (confirmed) {
+                    inputEditor.innerHTML = '';
+                    inputEditor.textContent = '';
+                    updateEmptyStates();
+                    updateOutput();
+                    inputEditor.focus();
+                    FeedbackHandler.info('Input cleared');
+                }
+            } else {
+                FeedbackHandler.info('Input is already empty');
+            }
+        });
+    }
+
+    // Listen for input changes
+    if (inputEditor) {
+        inputEditor.addEventListener('input', () => {
+            updateEmptyStates();
+            updateOutput();
+            // Update colors after input in case new content was added
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                setTimeout(() => updateInputEditorColors('dark'), 50);
+            }
+        });
+        
+        inputEditor.addEventListener('paste', () => {
+            setTimeout(() => {
+                updateEmptyStates();
+                updateOutput();
+                // Update colors after paste to handle Word's inline styles
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                if (currentTheme === 'dark') {
+                    updateInputEditorColors('dark');
+                }
+            }, 100);
+        });
+    }
 
     // Preview toggle handler
     if (previewToggle) {
@@ -51,8 +425,44 @@ document.addEventListener('DOMContentLoaded', () => {
             const isPreview = OutputRenderer.togglePreview();
             if (isPreview) {
                 previewToggle.classList.add('active');
+                previewToggle.setAttribute('aria-pressed', 'true');
+                previewToggle.setAttribute('aria-label', 'Switch to code view (Ctrl+P)');
             } else {
                 previewToggle.classList.remove('active');
+                previewToggle.setAttribute('aria-pressed', 'false');
+                previewToggle.setAttribute('aria-label', 'Switch to preview view (Ctrl+P)');
+            }
+        });
+    }
+
+    // Download button handler
+    if (downloadButton) {
+        downloadButton.addEventListener('click', () => {
+            const html = getOutputHTML();
+            if (html) {
+                // Create a blob with the HTML content
+                const blob = new Blob([html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                
+                // Create a temporary anchor element
+                const a = document.createElement('a');
+                a.href = url;
+                
+                // Generate filename with timestamp
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                a.download = `wordhtml2-output-${timestamp}.html`;
+                
+                // Trigger download
+                document.body.appendChild(a);
+                a.click();
+                
+                // Cleanup
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                FeedbackHandler.success('HTML file downloaded!');
+            } else {
+                FeedbackHandler.info('No content to download');
             }
         });
     }
@@ -63,15 +473,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const html = getOutputHTML();
             if (html) {
                 navigator.clipboard.writeText(html).then(() => {
-                    // Visual feedback - change icon briefly
-                    copyButton.style.opacity = '0.6';
-                    setTimeout(() => {
-                        copyButton.style.opacity = '1';
-                    }, 500);
+                    // Visual feedback - show checkmark and toast
+                    FeedbackHandler.showButtonSuccess(copyButton);
+                    FeedbackHandler.success('HTML copied to clipboard!');
                 }).catch(err => {
                     console.error('Failed to copy:', err);
-                    alert('Failed to copy to clipboard');
+                    FeedbackHandler.error('Failed to copy to clipboard');
                 });
+            } else {
+                FeedbackHandler.info('No content to copy');
             }
         });
     }
@@ -94,6 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 outputDisplay.textContent = '';
             }
+            updateEmptyStates();
             return;
         }
 
@@ -111,6 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render output with custom CSS
         OutputRenderer.render(cleanedHTML, customCSS);
+        updateEmptyStates();
     }
 
     /**
@@ -262,7 +674,41 @@ document.addEventListener('DOMContentLoaded', () => {
         return OutputRenderer.getFormattedHTML(cleanedHTML);
     }
 
+    // Sidebar toggle handler
+    if (sidebarToggle && toolbarArea) {
+        sidebarToggle.addEventListener('click', () => {
+            const isCollapsed = toolbarArea.classList.contains('collapsed');
+            toolbarArea.classList.toggle('collapsed');
+            sidebarToggle.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
+        });
+    }
+
+    // Initialize Keyboard Shortcuts
+    KeyboardShortcuts.init({
+        clearInput: () => {
+            if (clearInputButton) {
+                clearInputButton.click();
+            }
+        },
+        downloadOutput: () => {
+            if (downloadButton) {
+                downloadButton.click();
+            }
+        },
+        copyOutput: () => {
+            if (copyButton) {
+                copyButton.click();
+            }
+        },
+        togglePreview: () => {
+            if (previewToggle) {
+                previewToggle.click();
+            }
+        }
+    });
+
     // Initial update
+    updateEmptyStates();
     updateOutput();
 });
 

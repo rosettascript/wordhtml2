@@ -63,6 +63,15 @@ const OutputRenderer = {
             return;
         }
 
+        // Save scroll position before updating (both absolute and percentage)
+        const scrollTop = this.outputElement.scrollTop;
+        const scrollLeft = this.outputElement.scrollLeft;
+        const scrollHeight = this.outputElement.scrollHeight;
+        const clientHeight = this.outputElement.clientHeight;
+        const maxScrollTop = scrollHeight - clientHeight;
+        // Calculate scroll percentage (0 to 1)
+        const scrollPercentage = maxScrollTop > 0 ? scrollTop / maxScrollTop : 0;
+
         // Store HTML and CSS (even if empty)
         this.customCSS = customCSS || '';
         this.currentHTML = html || '';
@@ -76,6 +85,72 @@ const OutputRenderer = {
         } else {
             this.renderCode(this.currentHTML, this.customCSS);
         }
+
+        // Restore scroll position after content renders
+        // Use a more robust approach with MutationObserver to catch when DOM is stable
+        const restoreScroll = () => {
+            const newScrollHeight = this.outputElement.scrollHeight;
+            const newClientHeight = this.outputElement.clientHeight;
+            const newMaxScrollTop = newScrollHeight - newClientHeight;
+            const newMaxScrollLeft = this.outputElement.scrollWidth - this.outputElement.clientWidth;
+            
+            // Try to restore using percentage first (works better when content changes)
+            let targetScrollTop;
+            if (newMaxScrollTop > 0 && scrollPercentage > 0) {
+                // Restore to same percentage position
+                targetScrollTop = newMaxScrollTop * scrollPercentage;
+            } else {
+                // Fallback to absolute position if percentage doesn't work
+                targetScrollTop = scrollTop;
+            }
+            
+            // Clamp scroll position to valid range
+            const clampedScrollTop = Math.min(targetScrollTop, Math.max(0, newMaxScrollTop));
+            const clampedScrollLeft = Math.min(scrollLeft, Math.max(0, newMaxScrollLeft));
+            
+            this.outputElement.scrollTop = clampedScrollTop;
+            this.outputElement.scrollLeft = clampedScrollLeft;
+        };
+        
+        // Use MutationObserver to watch for DOM changes and restore scroll when stable
+        let mutationTimeout;
+        let restoreAttempts = 0;
+        const maxRestoreAttempts = 10;
+        
+        const observer = new MutationObserver(() => {
+            clearTimeout(mutationTimeout);
+            mutationTimeout = setTimeout(() => {
+                restoreScroll();
+                restoreAttempts++;
+                // Disconnect after successful restoration or max attempts
+                if (restoreAttempts >= maxRestoreAttempts) {
+                    observer.disconnect();
+                }
+            }, 100);
+        });
+        
+        observer.observe(this.outputElement, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class']
+        });
+        
+        // Also try multiple times as fallback (more attempts for preview mode)
+        requestAnimationFrame(() => {
+            restoreScroll();
+            setTimeout(restoreScroll, 100);
+            setTimeout(restoreScroll, 200);
+            setTimeout(restoreScroll, 300);
+            setTimeout(restoreScroll, 500);
+            setTimeout(restoreScroll, 700);
+            setTimeout(restoreScroll, 1000);
+        });
+        
+        // Cleanup observer after max wait time
+        setTimeout(() => {
+            observer.disconnect();
+        }, 2000);
     },
 
     /**
@@ -130,11 +205,8 @@ const OutputRenderer = {
         this.outputElement.classList.remove('preview-mode');
         
         if (!html || html.trim() === '') {
-            // If no HTML, just show empty preview
-            const previewContainer = document.createElement('div');
-            previewContainer.className = 'preview-container';
-            previewContainer.innerHTML = '<p style="color: #9CA3AF; font-style: italic;">No content to preview</p>';
-            this.outputElement.appendChild(previewContainer);
+            // If no HTML, clear the output to show empty state
+            this.outputElement.innerHTML = '';
             this.outputElement.classList.add('preview-mode');
             return;
         }
@@ -149,16 +221,69 @@ const OutputRenderer = {
         const previewContainer = document.createElement('div');
         previewContainer.className = 'preview-container';
         
-        // Add custom CSS if provided
+        // Add custom CSS if provided (add it first, before HTML content)
         if (customCSS && customCSS.trim()) {
+            let cssContent = customCSS.trim();
+            
+            // Extract CSS from all <style> tags if present, otherwise use the content as-is
+            const styleTagRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+            const styleMatches = cssContent.match(styleTagRegex);
+            
+            if (styleMatches && styleMatches.length > 0) {
+                // Extract content from all <style> tags
+                cssContent = styleMatches.map(match => {
+                    return match.replace(/<style[^>]*>/i, '').replace(/<\/style>/i, '').trim();
+                }).join('\n\n');
+            } else {
+                // If no <style> tags, strip any single wrapping style tag if present
+                cssContent = cssContent.replace(/^<style[^>]*>/i, '').replace(/<\/style>$/i, '').trim();
+            }
+            
+            // Scope the CSS to .preview-container by prefixing each selector
+            // Only apply rules that have !important - filter out rules without !important
+            // This ensures custom CSS only overrides when explicitly marked with !important
+            let scopedCSS = cssContent;
+            
+            // Match CSS rules (selector { properties })
+            // This regex handles multi-line selectors and properties
+            scopedCSS = scopedCSS.replace(/([^{}]+)\{([^{}]*)\}/g, (match, selector, properties) => {
+                // Skip if already scoped or if it's a keyframe/media query
+                if (selector.trim().startsWith('@') || selector.includes('.preview-container')) {
+                    return match;
+                }
+                
+                // Only process rules that contain !important
+                // If properties don't have !important, skip this rule (return empty string)
+                if (!properties.includes('!important')) {
+                    return ''; // Filter out rules without !important
+                }
+                
+                // Prefix each selector with .preview-container
+                const prefixedSelectors = selector.split(',').map(s => {
+                    const trimmed = s.trim();
+                    // Skip comments, media queries, and already scoped selectors
+                    if (trimmed.startsWith('@') || trimmed.startsWith('/*') || trimmed.includes('.preview-container')) {
+                        return trimmed;
+                    }
+                    return `.preview-container ${trimmed}`;
+                }).join(', ');
+                
+                return `${prefixedSelectors} {${properties}}`;
+            });
+            
+            // Clean up any empty lines or extra whitespace left after filtering
+            scopedCSS = scopedCSS.replace(/\n\s*\n\s*\n/g, '\n\n').trim();
+            
+            // Create a single style element with all the CSS
             const style = document.createElement('style');
-            style.textContent = customCSS.trim();
+            style.textContent = scopedCSS;
             previewContainer.appendChild(style);
         }
         
-        // Set the HTML content (this will render it)
-        // Use innerHTML assignment, not += to avoid issues
-        previewContainer.innerHTML = decodedHTML;
+        // Create a content container for the HTML
+        const contentDiv = document.createElement('div');
+        contentDiv.innerHTML = decodedHTML;
+        previewContainer.appendChild(contentDiv);
         
         this.outputElement.appendChild(previewContainer);
         this.outputElement.classList.add('preview-mode');
