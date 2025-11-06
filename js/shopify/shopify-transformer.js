@@ -412,7 +412,12 @@ const ShopifyTransformer = {
             
             // Check if this is a "Sources:" paragraph
             if (text.includes('sources') && (text === 'sources' || text === 'sources:' || text.includes('sources:'))) {
-                // Format the Sources paragraph first
+                // Add spacer before Sources paragraph
+                const spacer = document.createElement('p');
+                spacer.innerHTML = '';
+                p.parentNode.insertBefore(spacer, p);
+                
+                // Format the Sources paragraph
                 const sourcesText = HtmlParser.getTextContent(p.innerHTML).trim();
                 if (sourcesText.toLowerCase().includes('sources')) {
                     p.innerHTML = '<em><strong>Sources:</strong></em>';
