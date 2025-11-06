@@ -161,6 +161,30 @@ const KeyTakeawaysProcessor = {
     cleanListItem(html) {
         const tempDiv = HtmlParser.parseHTML(html);
         
+        // Remove <br> tags from list items (invalid HTML)
+        const brTags = Array.from(tempDiv.querySelectorAll('br'));
+        brTags.forEach(br => {
+            // Remove the <br> tag and replace with a space if it's between text nodes
+            const parent = br.parentNode;
+            const prevSibling = br.previousSibling;
+            const nextSibling = br.nextSibling;
+            
+            // Check if there's text before and after the br
+            const hasTextBefore = prevSibling && prevSibling.nodeType === 3 && prevSibling.textContent.trim();
+            const hasTextAfter = nextSibling && nextSibling.nodeType === 3 && nextSibling.textContent.trim();
+            
+            // If br is between text nodes, replace with space
+            if (hasTextBefore && hasTextAfter) {
+                // Add space before removing br
+                if (!prevSibling.textContent.endsWith(' ')) {
+                    prevSibling.textContent += ' ';
+                }
+            }
+            
+            // Remove the <br> tag
+            br.remove();
+        });
+        
         // Remove style attributes but preserve semantic tags
         const allElements = tempDiv.querySelectorAll('*');
         allElements.forEach(el => {

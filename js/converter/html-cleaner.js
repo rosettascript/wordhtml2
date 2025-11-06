@@ -504,6 +504,9 @@ const HtmlCleaner = {
         // Step 2: Remove paragraphs from list items (invalid HTML)
         this.removeParagraphsFromListItems(container);
         
+        // Step 2.5: Remove <br> tags from list items (invalid HTML)
+        this.removeBrFromListItems(container);
+        
         // Step 3: Fix invalid nesting (inline tags wrapping block elements)
         this.fixInvalidNesting(container);
         
@@ -1820,6 +1823,38 @@ const HtmlCleaner = {
                     parent.insertBefore(p.firstChild, p);
                 }
                 p.remove();
+            });
+        });
+    },
+
+    /**
+     * Remove <br> tags from inside list items (invalid HTML)
+     * @param {HTMLElement} container - Container element
+     */
+    removeBrFromListItems(container) {
+        const listItems = Array.from(container.querySelectorAll('li'));
+        listItems.forEach(li => {
+            const brTags = Array.from(li.querySelectorAll('br'));
+            brTags.forEach(br => {
+                // Remove the <br> tag and replace with a space if it's between text nodes
+                const parent = br.parentNode;
+                const prevSibling = br.previousSibling;
+                const nextSibling = br.nextSibling;
+                
+                // Check if there's text before and after the br
+                const hasTextBefore = prevSibling && prevSibling.nodeType === 3 && prevSibling.textContent.trim();
+                const hasTextAfter = nextSibling && nextSibling.nodeType === 3 && nextSibling.textContent.trim();
+                
+                // If br is between text nodes, replace with space
+                if (hasTextBefore && hasTextAfter) {
+                    // Add space before removing br
+                    if (!prevSibling.textContent.endsWith(' ')) {
+                        prevSibling.textContent += ' ';
+                    }
+                }
+                
+                // Remove the <br> tag
+                br.remove();
             });
         });
     }
