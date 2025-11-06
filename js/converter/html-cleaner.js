@@ -111,7 +111,7 @@ const HtmlCleaner = {
 
     /**
      * Remove Word-specific attributes from all elements (DOM-based, mutates in place)
-     * Preserves border, padding, and margin styles while removing Word-specific styles
+     * Preserves border, padding, and margin styles ONLY for div, table, td, and th elements while removing Word-specific styles
      * @param {HTMLElement} container - Container element
      */
     removeWordAttributes(container) {
@@ -119,60 +119,96 @@ const HtmlCleaner = {
         allElements.forEach(el => {
             // Remove Word-specific attributes
             const attrsToRemove = [];
+            const isDiv = el.tagName === 'DIV';
+            const isTable = el.tagName === 'TABLE';
+            const isTableCell = el.tagName === 'TD' || el.tagName === 'TH';
+            const shouldPreserveLayoutStyles = isDiv || isTable || isTableCell;
+            
+            // Debug: Log div/table/td/th elements with style attributes
+            if (shouldPreserveLayoutStyles && el.hasAttribute('style')) {
+                const originalStyle = el.getAttribute('style');
+                if (originalStyle && (originalStyle.includes('margin') || originalStyle.includes('padding') || originalStyle.includes('border'))) {
+                    console.log(`🔍 Processing ${el.tagName.toLowerCase()} with style:`, originalStyle);
+                }
+            }
+            
             Array.from(el.attributes).forEach(attr => {
                 const name = attr.name.toLowerCase();
                 const value = attr.value.toLowerCase();
                 
-                // Handle style attributes - preserve borders, padding, and margin while removing Word-specific styles
+                // Handle style attributes - preserve borders, padding, and margin ONLY for divs while removing Word-specific styles
                 if (name === 'style') {
                     const styleValue = el.getAttribute('style') || '';
                     if (styleValue) {
-                        // Filter style properties: keep borders, padding, margin; remove Word-specific styles
+                        // Filter style properties: keep borders, padding, margin ONLY for divs; remove Word-specific styles
                         const preservedStyles = [];
-                        const styleDeclarations = styleValue.split(';').map(s => s.trim()).filter(s => s);
+                        // Split by semicolon, but preserve empty declarations to handle edge cases
+                        const styleDeclarations = styleValue.split(';').map(s => s.trim()).filter(s => s.length > 0);
                         
                         styleDeclarations.forEach(declaration => {
                             const colonIndex = declaration.indexOf(':');
-                            if (colonIndex === -1) return;
+                            if (colonIndex === -1) {
+                                // No colon found, skip this declaration
+                                return;
+                            }
                             
                             const property = declaration.substring(0, colonIndex).trim().toLowerCase();
                             const propValue = declaration.substring(colonIndex + 1).trim();
                             
-                            // Preserve border-related properties
-                            if (property.startsWith('border')) {
-                                preservedStyles.push(declaration);
+                            // Preserve border, padding, and margin-related properties ONLY for div and table elements
+                            // Note: property is already lowercase from line 144
+                            if (shouldPreserveLayoutStyles) {
+                                if (property.startsWith('border') || 
+                                    property.startsWith('padding') || 
+                                    property.startsWith('margin')) {
+                                    // Preserve the original declaration format (with original spacing/casing)
+                                    preservedStyles.push(declaration);
+                                    if (window.DEBUG_HTML_CLEANER) {
+                                        console.log(`✅ Preserving ${property} style for ${el.tagName.toLowerCase()}:`, declaration);
+                                    }
+                                    return; // Skip to next declaration
+                                }
                             }
-                            // Preserve padding-related properties
-                            else if (property.startsWith('padding')) {
-                                preservedStyles.push(declaration);
-                            }
-                            // Preserve margin-related properties
-                            else if (property.startsWith('margin')) {
-                                preservedStyles.push(declaration);
-                            }
+                            
                             // Remove Word-specific styles (mso-*, page-break, etc.)
-                            else if (property.startsWith('mso-') || 
-                                     property.startsWith('o:') ||
-                                     property.includes('page-break') ||
-                                     property.includes('tab-stops') ||
-                                     (property.includes('text-indent') && propValue.includes('mso'))) {
+                            // Note: property is already lowercase from line 144
+                            if (property.startsWith('mso-') || 
+                                property.startsWith('o:') ||
+                                property.includes('page-break') ||
+                                property.includes('tab-stops') ||
+                                (property.includes('text-indent') && propValue.toLowerCase().includes('mso'))) {
                                 // Skip Word-specific styles
+                                return;
                             }
                             // Remove other formatting styles that should be semantic (font-weight, font-style)
                             // These should have been converted to <strong>/<em> tags already
-                            else if (property === 'font-weight' || property === 'font-style') {
+                            if (property === 'font-weight' || property === 'font-style') {
                                 // Skip - should have been converted to semantic tags
+                                return;
                             }
                             // Remove all other styles (they're Word-specific formatting)
-                            // We preserve borders, padding, and margin as they're structural/layout properties
+                            // For non-div elements, all styles are removed
+                            // For div elements, only border/padding/margin are preserved (already handled above)
                         });
                         
                         // If we have preserved styles, update the style attribute
                         if (preservedStyles.length > 0) {
-                            el.setAttribute('style', preservedStyles.join('; '));
+                            // Join with semicolon and space, but don't add trailing semicolon
+                            const finalStyle = preservedStyles.join('; ');
+                            el.setAttribute('style', finalStyle);
+                            
+                            // Debug: Log preserved styles for divs/tables
+                            if (shouldPreserveLayoutStyles && window.DEBUG_HTML_CLEANER) {
+                                console.log(`✅ ${el.tagName} style preserved: "${finalStyle}" (from original: "${styleValue}")`);
+                            }
                         } else {
                             // No preserved styles, remove the style attribute entirely
                             attrsToRemove.push(name);
+                            
+                            // Debug: Log when style is removed from div/table
+                            if (shouldPreserveLayoutStyles && window.DEBUG_HTML_CLEANER) {
+                                console.log(`⚠️ ${el.tagName} style removed (no border/padding/margin found): "${styleValue}"`);
+                            }
                         }
                     } else {
                         attrsToRemove.push(name);
