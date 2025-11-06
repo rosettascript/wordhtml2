@@ -362,6 +362,18 @@ const ShopifyTransformer = {
     addSpacerBeforeHeaders(html) {
         const tempDiv = HtmlParser.parseHTML(html);
         
+        // Helper function to check if previous sibling is already an empty paragraph spacer
+        const hasSpacerBefore = (header) => {
+            const prevSibling = header.previousElementSibling;
+            if (!prevSibling || prevSibling.tagName.toLowerCase() !== 'p') {
+                return false;
+            }
+            const text = prevSibling.textContent || prevSibling.innerText || '';
+            const innerHTML = prevSibling.innerHTML.trim();
+            // Check if it's an empty paragraph (empty, whitespace only, or just &nbsp;)
+            return text.trim() === '' && (innerHTML === '' || innerHTML === '&nbsp;');
+        };
+        
         // Find all headers in document order
         const allHeaders = Array.from(tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6'));
         
@@ -383,6 +395,11 @@ const ShopifyTransformer = {
             // Skip Key Takeaways headers
             if (text.includes('key takeaways')) {
                 continue;
+            }
+            
+            // Check if there's already a spacer before this header
+            if (hasSpacerBefore(header)) {
+                continue; // Skip adding another spacer
             }
             
             // Handle FAQ section
