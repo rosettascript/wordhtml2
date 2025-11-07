@@ -495,33 +495,39 @@ const ShopifyTransformer = {
                         const listItems = current.querySelectorAll('li');
                         
                         if (listItems.length > 0) {
+                            let number = 0;
                             if (disableSources) {
                                 listItems.forEach((li) => {
+                                    this.removeBrFromListItem(li);
+                                    number += 1;
                                     const originalHTML = li.innerHTML.trim();
                                     if (!originalHTML) return;
                                     if (!/^<em[\s>]/i.test(originalHTML) || !/<\/em>\s*$/i.test(originalHTML)) {
                                         li.innerHTML = `<em>${originalHTML}</em>`;
                                     }
                                 });
+                                this.removeBrFromList(current);
+                                number = this.appendTrailingSourcesToList(current, number);
+                                this.removeTrailingBrNodes(current);
                                 break;
                             }
 
                             // Convert list items to numbered paragraphs
                             listItems.forEach((li, index) => {
-                                // Get the innerHTML of the list item
-                                let itemHTML = li.innerHTML.trim();
-                                
-                                // Clean up any extra whitespace but preserve structure
-                                itemHTML = itemHTML.replace(/\s+/g, ' ').trim();
-                                
+                                this.removeBrFromListItem(li);
+                                number = index + 1;
+                                const itemHTML = li.innerHTML.trim();
+
                                 // Create numbered paragraph with italic
-                                const number = index + 1;
                                 const paragraph = document.createElement('p');
                                 paragraph.innerHTML = `<em>${number}. ${itemHTML}</em>`;
                                 
                                 // Insert before the list
                                 current.parentNode.insertBefore(paragraph, current);
                             });
+
+                            // Handle trailing nodes (text or br) after the list as additional sources
+                            number = this.processTrailingSourceNodes(current, number);
                             
                             // Remove the original list
                             current.remove();
@@ -540,6 +546,289 @@ const ShopifyTransformer = {
         }
         
         return tempDiv.innerHTML;
+    },
+
+    /**
+     * Remove <br> tags from a list item while preserving spacing
+     * @param {HTMLElement} li - List item element
+     */
+    removeBrFromListItem(li) {
+        if (!li) return;
+        const brTags = Array.from(li.querySelectorAll('br'));
+        brTags.forEach(br => {
+            const parent = br.parentNode;
+            if (!parent) {
+                br.remove();
+                return;
+            }
+
+            const prevSibling = br.previousSibling;
+            const nextSibling = br.nextSibling;
+
+            const hasContent = (node) => {
+                if (!node) return false;
+                if (node.nodeType === 3) {
+                    return node.textContent && node.textContent.trim() !== '';
+                }
+                if (node.nodeType === 1) {
+                    return node.textContent && node.textContent.trim() !== '';
+                }
+                return false;
+            };
+
+            if (hasContent(prevSibling) && hasContent(nextSibling)) {
+                if (prevSibling.nodeType === 3) {
+                    if (!prevSibling.textContent.endsWith(' ')) {
+                        prevSibling.textContent += ' ';
+                    }
+                } else {
+                    parent.insertBefore(document.createTextNode(' '), br);
+                }
+            }
+
+            br.remove();
+        });
+    },
+
+    /**
+     * Append trailing nodes after a list into the list as additional sources (when disableSources is true)
+     * @param {HTMLElement} listNode - List element to append to
+     * @param {number} currentNumber - Current count of sources processed
+     * @returns {number} - Updated count after appending nodes
+     */
+    appendTrailingSourcesToList(listNode, currentNumber = 0) {
+        if (!listNode || !listNode.parentNode) return currentNumber;
+        const parent = listNode.parentNode;
+        const nodesToProcess = [];
+
+        let sibling = listNode.nextSibling;
+        const isStopNode = (node) => {
+            if (!node || node.nodeType !== 1) return false;
+            const tag = node.tagName.toLowerCase();
+            return tag === 'p' || tag.match(/^h[1-6]$/) || tag === 'ul' || tag === 'ol' || tag === 'div' || tag === 'section';
+        };
+
+        while (sibling) {
+            const next = sibling.nextSibling;
+            if (sibling.nodeType === 3) {
+                if (!sibling.textContent || sibling.textContent.trim() === '') {
+                    sibling.remove();
+                    sibling = next;
+                    continue;
+                }
+            }
+            if (sibling.nodeType === 1) {
+                const tag = sibling.tagName.toLowerCase();
+                if (tag === 'br') {
+                    sibling.remove();
+                    sibling = next;
+                    continue;
+                }
+                if (isStopNode(sibling)) {
+                    break;
+                }
+            }
+            nodesToProcess.push(sibling);
+            sibling = next;
+        }
+
+        const segments = [];
+        let currentSegment = [];
+        const flushSegment = () => {
+            if (currentSegment.length > 0) {
+                segments.push(currentSegment);
+                currentSegment = [];
+            }
+        };
+        nodesToProcess.forEach(node => {
+            const next = node.nextSibling;
+            currentSegment.push(node);
+            if (next && next.nodeType === 1 && next.tagName.toLowerCase() === 'br') {
+                next.remove();
+                flushSegment();
+            }
+        });
+        flushSegment();
+
+        const hasContent = (segment) => segment.some(node => {
+            if (!node) return false;
+            if (node.nodeType === 3) {
+                return node.textContent && node.textContent.trim() !== '';
+            }
+            if (node.nodeType === 1) {
+                const text = HtmlParser.getTextContent(node.innerHTML || node.textContent || '').trim();
+                return text !== '';
+            }
+            return false;
+        });
+
+        segments.forEach(segment => {
+            if (!hasContent(segment)) {
+                segment.forEach(node => node.remove());
+                return;
+            }
+
+            const li = document.createElement('li');
+            const em = document.createElement('em');
+            li.appendChild(em);
+
+            segment.forEach(node => {
+                em.appendChild(node);
+            });
+
+            this.removeBrFromListItem(li);
+            if (!/^<em[\s>]/i.test(li.innerHTML) || !/<\/em>\s*$/i.test(li.innerHTML)) {
+                const inner = li.innerHTML.trim();
+                li.innerHTML = `<em>${inner}</em>`;
+            }
+
+            listNode.appendChild(li);
+            currentNumber += 1;
+        });
+
+        return currentNumber;
+    },
+
+    /**
+     * Remove all <br> tags inside a list element while preserving spacing where needed
+     * @param {HTMLElement} listElement - List element (<ul> or <ol>)
+     */
+    removeBrFromList(listElement) {
+        if (!listElement) return;
+        const brTags = Array.from(listElement.querySelectorAll('br'));
+        brTags.forEach(br => {
+            const parent = br.parentNode;
+            if (!parent) {
+                br.remove();
+                return;
+            }
+
+            const prevSibling = br.previousSibling;
+            const nextSibling = br.nextSibling;
+            const hasText = (node) => {
+                if (!node) return false;
+                if (node.nodeType === 3) {
+                    return node.textContent && node.textContent.trim() !== '';
+                }
+                if (node.nodeType === 1) {
+                    return node.textContent && node.textContent.trim() !== '';
+                }
+                return false;
+            };
+
+            if (hasText(prevSibling) && hasText(nextSibling)) {
+                if (prevSibling.nodeType === 3) {
+                    if (!prevSibling.textContent.endsWith(' ')) {
+                        prevSibling.textContent += ' ';
+                    }
+                } else {
+                    parent.insertBefore(document.createTextNode(' '), br);
+                }
+            }
+
+            br.remove();
+        });
+    },
+
+    /**
+     * Remove trailing <br> nodes immediately following the list
+     * @param {HTMLElement} listNode - List element
+     */
+    removeTrailingBrNodes(listNode) {
+        if (!listNode || !listNode.parentNode) return;
+        let next = listNode.nextSibling;
+        while (next) {
+            const nodeToCheck = next;
+            next = next.nextSibling;
+            if (nodeToCheck.nodeType === 3) {
+                if (!nodeToCheck.textContent || !nodeToCheck.textContent.trim()) {
+                    nodeToCheck.remove();
+                    continue;
+                }
+                break;
+            }
+            if (nodeToCheck.nodeType === 1) {
+                const tag = nodeToCheck.tagName.toLowerCase();
+                if (tag === 'br') {
+                    nodeToCheck.remove();
+                    continue;
+                }
+            }
+            break;
+        }
+    },
+
+    /**
+     * Convert trailing nodes after the list into numbered paragraphs (Sources formatting)
+     * @param {HTMLElement} listNode - Original list element
+     * @param {number} currentNumber - Current source count (from list items)
+     * @returns {number} - Updated source count after processing trailing nodes
+     */
+    processTrailingSourceNodes(listNode, currentNumber = 0) {
+        if (!listNode || !listNode.parentNode) return currentNumber;
+        const parent = listNode.parentNode;
+        const nodesToProcess = [];
+
+        let sibling = listNode.nextSibling;
+        while (sibling) {
+            const next = sibling.nextSibling;
+            if (sibling.nodeType === 1) {
+                const tag = sibling.tagName.toLowerCase();
+                if (tag === 'p' || tag.match(/^h[1-6]$/) || tag === 'ul' || tag === 'ol' || tag === 'div') {
+                    break;
+                }
+            }
+            nodesToProcess.push(sibling);
+            sibling = next;
+        }
+
+        const flushSegment = (segment) => {
+            if (!segment || segment.length === 0) return currentNumber;
+            const hasContent = segment.some(node => {
+                if (node.nodeType === 3) {
+                    return node.textContent && node.textContent.trim() !== '';
+                }
+                if (node.nodeType === 1) {
+                    const text = HtmlParser.getTextContent(node.innerHTML || node.textContent || '').trim();
+                    return text !== '';
+                }
+                return false;
+            });
+
+            if (!hasContent) {
+                segment.forEach(node => node.remove());
+                return currentNumber;
+            }
+
+            const referenceNode = segment[0];
+            const paragraph = document.createElement('p');
+            const em = document.createElement('em');
+            const numberingText = `${currentNumber + 1}. `;
+
+            em.appendChild(document.createTextNode(numberingText));
+            paragraph.appendChild(em);
+            parent.insertBefore(paragraph, referenceNode);
+
+            segment.forEach(node => {
+                em.appendChild(node);
+            });
+
+            return currentNumber + 1;
+        };
+
+        let segmentNodes = [];
+        nodesToProcess.forEach(node => {
+            if (node.nodeType === 1 && node.tagName.toLowerCase() === 'br') {
+                node.remove();
+                currentNumber = flushSegment(segmentNodes);
+                segmentNodes = [];
+            } else {
+                segmentNodes.push(node);
+            }
+        });
+
+        currentNumber = flushSegment(segmentNodes);
+        return currentNumber;
     },
 
     /**

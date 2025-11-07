@@ -667,6 +667,12 @@ const HtmlCleaner = {
         
         // Step 2.5: Remove <br> tags from list items (invalid HTML)
         this.removeBrFromListItems(container);
+        // Step 2.6: Remove <br> tags directly under lists (ul/ol)
+        this.removeBrFromLists(container);
+        // Step 2.7: Remove stray <br> siblings around lists
+        this.removeBrAroundLists(container);
+        // Step 2.8: Fold trailing source entries back into lists
+        this.appendTrailingSourcesToLists(container);
         
         // Step 3: Fix invalid nesting (inline tags wrapping block elements)
         this.fixInvalidNesting(container);
@@ -2020,6 +2026,207 @@ const HtmlCleaner = {
                 
                 // Remove the <br> tag
                 br.remove();
+            });
+        });
+    },
+
+    /**
+     * Remove <br> tags that remain inside lists (ul/ol) after item cleanup
+     * @param {HTMLElement} container - Container element
+     */
+    removeBrFromLists(container) {
+        const lists = Array.from(container.querySelectorAll('ul, ol'));
+        lists.forEach(list => {
+            const brTags = Array.from(list.querySelectorAll('br'));
+            brTags.forEach(br => {
+                const parent = br.parentNode;
+                if (!parent) {
+                    br.remove();
+                    return;
+                }
+
+                const prevSibling = br.previousSibling;
+                const nextSibling = br.nextSibling;
+                const hasContent = (node) => {
+                    if (!node) return false;
+                    if (node.nodeType === 3) {
+                        return node.textContent && node.textContent.trim() !== '';
+                    }
+                    if (node.nodeType === 1) {
+                        const text = HtmlParser.getTextContent(node.innerHTML || node.textContent || '').trim();
+                        return text !== '';
+                    }
+                    return false;
+                };
+
+                if (hasContent(prevSibling) && hasContent(nextSibling)) {
+                    if (prevSibling.nodeType === 3) {
+                        if (!prevSibling.textContent.endsWith(' ')) {
+                            prevSibling.textContent += ' ';
+                        }
+                    } else {
+                        parent.insertBefore(document.createTextNode(' '), br);
+                    }
+                }
+
+                br.remove();
+            });
+        });
+    },
+
+    /**
+     * Remove stray <br> siblings immediately before or after lists (ul/ol)
+     * @param {HTMLElement} container - Container element
+     */
+    removeBrAroundLists(container) {
+        const lists = Array.from(container.querySelectorAll('ul, ol'));
+        lists.forEach(list => {
+            const cleanWhitespaceNode = (node, direction) => {
+                while (node) {
+                    const current = node;
+                    node = direction === 'next' ? current.nextSibling : current.previousSibling;
+                    if (current.nodeType === 3) {
+                        if (!current.textContent || current.textContent.trim() === '') {
+                            current.remove();
+                            continue;
+                        }
+                        break;
+                    }
+                    if (current.nodeType === 1 && current.tagName.toLowerCase() === 'br') {
+                        current.remove();
+                        continue;
+                    }
+                    break;
+                }
+            };
+
+            // Clean preceding siblings
+            cleanWhitespaceNode(list.previousSibling, 'prev');
+            // Clean following siblings
+            cleanWhitespaceNode(list.nextSibling, 'next');
+        });
+    },
+
+    /**
+     * Append trailing sibling nodes (typically citations broken out by <br>) back into Sources lists
+     * @param {HTMLElement} container - Container element
+     */
+    appendTrailingSourcesToLists(container) {
+        const lists = Array.from(container.querySelectorAll('ul, ol'));
+
+        const isSourcesParagraph = (element) => {
+            if (!element) return false;
+            const tag = element.tagName ? element.tagName.toLowerCase() : '';
+            if (tag !== 'p') return false;
+            const text = HtmlParser.getTextContent(element.innerHTML || element.textContent || '').toLowerCase().trim();
+            return text.startsWith('sources');
+        };
+
+        const isStopNode = (node) => {
+            if (!node || node.nodeType !== 1) return false;
+            const tag = node.tagName.toLowerCase();
+            return tag === 'p' ||
+                   tag.match(/^h[1-6]$/) ||
+                   tag === 'ul' ||
+                   tag === 'ol' ||
+                   tag === 'div' ||
+                   tag === 'section';
+        };
+
+        lists.forEach(list => {
+            // Only process lists that belong to a Sources section
+            let prevElement = list.previousSibling;
+            while (prevElement && prevElement.nodeType === 3 && (!prevElement.textContent || prevElement.textContent.trim() === '')) {
+                prevElement = prevElement.previousSibling;
+            }
+            if (!prevElement || prevElement.nodeType !== 1 || !isSourcesParagraph(prevElement)) {
+                return;
+            }
+
+            const nodesToMove = [];
+            let sibling = list.nextSibling;
+
+            while (sibling) {
+                const next = sibling.nextSibling;
+
+                if (sibling.nodeType === 3) {
+                    if (!sibling.textContent || sibling.textContent.trim() === '') {
+                        sibling.remove();
+                        sibling = next;
+                        continue;
+                    }
+                }
+
+                if (sibling.nodeType === 1) {
+                    const tag = sibling.tagName.toLowerCase();
+                    if (tag === 'br') {
+                        sibling.remove();
+                        sibling = next;
+                        continue;
+                    }
+                    if (isStopNode(sibling)) {
+                        break;
+                    }
+                }
+
+                nodesToMove.push(sibling);
+                sibling = next;
+            }
+
+            if (nodesToMove.length === 0) {
+                return;
+            }
+
+            const hasContent = (node) => {
+                if (!node) return false;
+                if (node.nodeType === 3) {
+                    return node.textContent && node.textContent.trim() !== '';
+                }
+                if (node.nodeType === 1) {
+                    const text = HtmlParser.getTextContent(node.innerHTML || node.textContent || '').trim();
+                    return text !== '';
+                }
+                return false;
+            };
+
+            const groups = [];
+            let currentGroup = [];
+            const flushGroup = () => {
+                if (currentGroup.length > 0) {
+                    groups.push(currentGroup);
+                    currentGroup = [];
+                }
+            };
+
+            nodesToMove.forEach(node => {
+                const next = node.nextSibling;
+                currentGroup.push(node);
+                if (next && next.nodeType === 1 && next.tagName.toLowerCase() === 'br') {
+                    next.remove();
+                    flushGroup();
+                }
+            });
+            flushGroup();
+
+            groups.forEach(group => {
+                if (!group.some(hasContent)) {
+                    group.forEach(node => node.remove());
+                    return;
+                }
+
+                const li = document.createElement('li');
+                const fragment = document.createDocumentFragment();
+                group.forEach(node => fragment.appendChild(node));
+                li.appendChild(fragment);
+
+                // Normalize whitespace inside the new list item
+                const textNodes = document.createTreeWalker(li, NodeFilter.SHOW_TEXT, null);
+                let current;
+                while ((current = textNodes.nextNode())) {
+                    current.textContent = current.textContent.replace(/\s+/g, ' ');
+                }
+
+                list.appendChild(li);
             });
         });
     }
