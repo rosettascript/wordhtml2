@@ -322,7 +322,8 @@
 
 .panel-editor p {
     display: block !important;
-    margin: 0.5em 0 !important;
+    margin-top: 0.5em !important;
+    margin-bottom: 0.5em !important;
     min-height: 1em;
     width: 100% !important;
     box-sizing: border-box !important;
@@ -340,16 +341,14 @@
 .panel-editor ul,
 .panel-editor ol {
     display: block !important;
-    margin: 0.5em 0 !important;
-    padding-left: 1.75rem !important;
+    margin-top: 0.5em !important;
+    margin-bottom: 0.5em !important;
+    padding-left: 2em !important;
+    list-style-type: disc !important;
     width: 100% !important;
     box-sizing: border-box !important;
-    list-style: none !important;
-    position: relative;
-}
-
-.panel-editor ul {
-    list-style-type: none !important;
+    overflow: visible !important;
+    list-style-position: outside !important;
 }
 
 .panel-editor > ul:first-child,
@@ -358,40 +357,17 @@
 }
 
 .panel-editor ol {
-    list-style-type: none !important;
-    counter-reset: panel-editor-ol;
-}
-
-.panel-editor li {
-    position: relative !important;
-}
-
-.panel-editor ul li::before {
-    content: '•';
-    position: absolute;
-    left: -1.25rem;
-    color: var(--foreground);
-    font-weight: 600;
-}
-
-.panel-editor ol li {
-    counter-increment: panel-editor-ol;
-}
-
-.panel-editor ol li::before {
-    content: counter(panel-editor-ol) '.';
-    position: absolute;
-    left: -1.75rem;
-    color: var(--foreground);
-    font-weight: 600;
+    list-style-type: decimal;
 }
 
 .panel-editor li {
     display: list-item !important;
-    margin: 0.25em 0 !important;
+    margin-top: 0.25em !important;
+    margin-bottom: 0.25em !important;
     width: 100% !important;
     box-sizing: border-box !important;
     color: var(--foreground) !important;
+    overflow: visible !important;
 }
 
 .panel-editor strong { font-weight: bold; }

@@ -46,12 +46,11 @@ const ReadAlsoProcessor = {
             // Clean up list item, ensure links have proper attributes
             let itemHTML = li.innerHTML;
             
-            // Ensure links have rel="noopener" and target="_blank"
+            // Ensure links have rel="noopener"
             const linkTemp = HtmlParser.parseHTML(itemHTML);
             const links = linkTemp.querySelectorAll('a');
             links.forEach(link => {
                 link.setAttribute('rel', 'noopener');
-                link.setAttribute('target', '_blank');
             });
             
             itemHTML = linkTemp.innerHTML;

@@ -62,105 +62,41 @@ const PasteHandler = {
 
             // Minimal processing: ONLY remove images, preserve everything else exactly
             const cleanedHTML = this.processPasteMinimal(pastedData);
-
+            
             // Insert cleaned HTML at cursor position
             this.insertAtCursor(inputElement, cleanedHTML);
+            
+            // Ensure list indicators are visible
+            this.ensureListIndicators(inputElement);
 
-            // Normalize editor content so lists and formatting stay visible in the input UI
-            const normalizedHTML = this.normalizeEditorContent(inputElement);
-
-            // Call callback with the normalized content (fallback to current editor content if needed)
-            const fullHTML = normalizedHTML || this.getOrderedContentFromEditable(inputElement);
+            // Ensure max-width on all elements to prevent overflow
+            const insertedElements = inputElement.querySelectorAll('*');
+            insertedElements.forEach(el => {
+                // Only add max-width if not already set, preserve everything else
+                const hasMaxWidth = el.style.maxWidth || 
+                    (el.hasAttribute('style') && /max-width\s*:/i.test(el.getAttribute('style')));
+                if (!hasMaxWidth) {
+                    if (el.hasAttribute('style')) {
+                        const currentStyle = el.getAttribute('style');
+                        el.setAttribute('style', currentStyle + (currentStyle.trim().endsWith(';') ? ' ' : '; ') + 'max-width: 100%');
+                    } else {
+                        el.setAttribute('style', 'max-width: 100%');
+                    }
+                }
+            });
+            
+            // Call callback with the full content
+            const fullHTML = this.getOrderedContentFromEditable(inputElement);
             callback(fullHTML);
         });
 
         // Also handle input events for real-time updates
         inputElement.addEventListener('input', () => {
             // Don't reformat - just get the content as-is
+            this.ensureListIndicators(inputElement);
             const html = this.getOrderedContentFromEditable(inputElement);
             callback(html);
         });
-    },
-
-    /**
-     * Normalize contenteditable markup so the source matches the cleaned output structure
-     * Converts Word list paragraphs into semantic lists and reapplies max-width guards
-     * @param {HTMLElement} element - Contenteditable element
-     * @returns {string} - Normalized HTML (formatted with line breaks)
-     */
-    normalizeEditorContent(element) {
-        if (!element) return '';
-
-        const originalHTML = this.getOrderedContentFromEditable(element);
-        if (!originalHTML) {
-            return '';
-        }
-
-        let cleanedHTML = originalHTML;
-
-        if (typeof HtmlConverter !== 'undefined' && HtmlConverter && typeof HtmlConverter.convert === 'function') {
-            try {
-                cleanedHTML = HtmlConverter.convert(originalHTML);
-            } catch (error) {
-                console.error('PasteHandler: failed to normalize pasted content', error);
-                cleanedHTML = originalHTML;
-            }
-        }
-
-        // Replace editor contents with normalized markup so UI mirrors rendered output
-        if (cleanedHTML && element.innerHTML !== cleanedHTML) {
-            element.innerHTML = cleanedHTML;
-        }
-
-        // Reapply max-width safeguards to every node
-        this.applyMaxWidthStyles(element);
-
-        // Move caret to the end of the inserted content
-        this.placeCursorAtEnd(element);
-
-        return cleanedHTML;
-    },
-
-    /**
-     * Ensure every element inside the editor respects the max-width guard
-     * @param {HTMLElement} element - Contenteditable element
-     */
-    applyMaxWidthStyles(element) {
-        if (!element) return;
-
-        const allNodes = element.querySelectorAll('*');
-        allNodes.forEach(node => {
-            const existingStyle = node.getAttribute('style');
-            const hasMaxWidth = (node.style && node.style.maxWidth) || (existingStyle && /max-width\s*:/i.test(existingStyle));
-
-            if (hasMaxWidth) {
-                return;
-            }
-
-            if (existingStyle && existingStyle.trim() !== '') {
-                const needsSemicolon = existingStyle.trim().endsWith(';');
-                node.setAttribute('style', `${existingStyle}${needsSemicolon ? ' ' : '; '}max-width: 100%`);
-            } else {
-                node.setAttribute('style', 'max-width: 100%');
-            }
-        });
-    },
-
-    /**
-     * Place caret at the end of the contenteditable element
-     * @param {HTMLElement} element - Contenteditable element
-     */
-    placeCursorAtEnd(element) {
-        if (!element) return;
-        const selection = window.getSelection();
-        if (!selection) return;
-
-        const range = document.createRange();
-        range.selectNodeContents(element);
-        range.collapse(false);
-
-        selection.removeAllRanges();
-        selection.addRange(range);
     },
 
     /**
@@ -637,23 +573,37 @@ const PasteHandler = {
             // Force block display - this is critical for visual separation
             p.style.setProperty('display', 'block', 'important');
             p.style.setProperty('width', '100%', 'important');
-            setStyleIfNotSet(p, 'margin', '0.5em 0');
+            setStyleIfNotSet(p, 'margin-top', '0.5em');
+            setStyleIfNotSet(p, 'margin-bottom', '0.5em');
         });
         
         // Style lists (only if not already set)
+        const ensureListStyle = (list, type) => {
+            const currentType = (list.style.getPropertyValue('list-style-type') || '').trim().toLowerCase();
+            const shorthand = (list.style.getPropertyValue('list-style') || '').trim().toLowerCase();
+
+            if (shorthand && shorthand.includes('none')) {
+                list.style.removeProperty('list-style');
+            }
+
+            if (!currentType || currentType === 'none') {
+                list.style.setProperty('list-style-type', type, 'important');
+            }
+        };
+
         const lists = element.querySelectorAll('ul, ol');
         lists.forEach(list => {
             // Force block display
             list.style.setProperty('display', 'block', 'important');
             list.style.setProperty('width', '100%', 'important');
             setStyleIfNotSet(list, 'padding-left', '2em');
-            setStyleIfNotSet(list, 'margin', '0.5em 0');
+            setStyleIfNotSet(list, 'margin-top', '0.5em');
+            setStyleIfNotSet(list, 'margin-bottom', '0.5em');
             if (list.tagName === 'UL') {
-                list.style.setProperty('list-style-type', 'disc', 'important');
+                ensureListStyle(list, 'disc');
             } else if (list.tagName === 'OL') {
-                list.style.setProperty('list-style-type', 'decimal', 'important');
+                ensureListStyle(list, 'decimal');
             }
-            list.style.setProperty('list-style-position', 'outside', 'important');
         });
         
         // Style list items (only if not already set)
@@ -661,15 +611,170 @@ const PasteHandler = {
         listItems.forEach(li => {
             li.style.setProperty('display', 'list-item', 'important');
             li.style.setProperty('width', '100%', 'important');
-            li.style.setProperty('list-style-position', 'outside', 'important');
-            const parentList = li.parentElement;
-            if (parentList && parentList.tagName === 'UL') {
-                li.style.setProperty('list-style-type', 'disc', 'important');
-            } else if (parentList && parentList.tagName === 'OL') {
-                li.style.setProperty('list-style-type', 'decimal', 'important');
-            }
-            setStyleIfNotSet(li, 'margin', '0.25em 0');
+            setStyleIfNotSet(li, 'margin-top', '0.25em');
+            setStyleIfNotSet(li, 'margin-bottom', '0.25em');
         });
+    },
+
+    ensureListIndicators(element) {
+        this.convertWordParagraphLists(element);
+
+        const lists = element.querySelectorAll('ul, ol');
+        lists.forEach(list => {
+            if (!(list instanceof HTMLElement)) return;
+
+            const currentType = (list.style.getPropertyValue('list-style-type') || '').trim().toLowerCase();
+            const shorthand = (list.style.getPropertyValue('list-style') || '').trim().toLowerCase();
+            const desiredType = list.tagName === 'OL' ? 'decimal' : 'disc';
+
+            if (shorthand && shorthand.includes('none')) {
+                list.style.removeProperty('list-style');
+            }
+
+            if (!currentType || currentType === 'none') {
+                list.style.setProperty('list-style-type', desiredType, 'important');
+            }
+
+            const inlinePadding = (list.style.getPropertyValue('padding-left') || '').trim().toLowerCase();
+            if (inlinePadding === '0' || inlinePadding === '0px' || inlinePadding === '0in' || inlinePadding === '0cm' || inlinePadding === '0mm') {
+                list.style.removeProperty('padding-left');
+            }
+
+            const computedPadding = parseFloat(window.getComputedStyle(list).paddingLeft) || 0;
+            if (computedPadding < 12) {
+                list.style.setProperty('padding-left', '1.75em', 'important');
+            }
+
+            const imageValue = (list.style.getPropertyValue('list-style-image') || '').trim().toLowerCase();
+            if (imageValue === 'none') {
+                list.style.removeProperty('list-style-image');
+            }
+        });
+
+        const listItems = element.querySelectorAll('li');
+        listItems.forEach(li => {
+            if (!(li instanceof HTMLElement)) return;
+            const displayValue = (li.style.getPropertyValue('display') || '').trim().toLowerCase();
+            if (displayValue && displayValue !== 'list-item') {
+                li.style.removeProperty('display');
+            }
+
+            const textIndent = parseFloat(window.getComputedStyle(li).textIndent) || 0;
+            if (textIndent < 0) {
+                li.style.setProperty('text-indent', '0', 'important');
+            }
+        });
+    },
+
+    convertWordParagraphLists(element) {
+        if (!element || !element.children) return;
+
+        const childNodes = Array.from(element.childNodes);
+        if (childNodes.length === 0) return;
+
+        const newNodes = [];
+        let currentList = null;
+
+        const commitList = () => {
+            if (currentList) {
+                currentList.removeAttribute('data-list-type');
+                newNodes.push(currentList);
+                currentList = null;
+            }
+        };
+
+        childNodes.forEach(node => {
+            if (!(node instanceof HTMLElement)) {
+                commitList();
+                newNodes.push(node);
+                return;
+            }
+
+            if (node.tagName !== 'P' || !this.isWordListParagraph(node)) {
+                commitList();
+                newNodes.push(node);
+                return;
+            }
+
+            const { type, content } = this.extractWordListItem(node);
+            if (!currentList || currentList.dataset.listType !== type) {
+                commitList();
+                currentList = document.createElement(type === 'ol' ? 'ol' : 'ul');
+                currentList.dataset.listType = type;
+
+                const marginLeft = node.style.marginLeft;
+                if (marginLeft) {
+                    currentList.style.marginLeft = marginLeft;
+                }
+            }
+
+            const listItem = document.createElement('li');
+            listItem.innerHTML = content;
+            currentList.appendChild(listItem);
+        });
+
+        commitList();
+
+        if (newNodes.length !== childNodes.length || newNodes.some((n, idx) => n !== childNodes[idx])) {
+            element.innerHTML = '';
+            newNodes.forEach(node => element.appendChild(node));
+        }
+    },
+
+    isWordListParagraph(node) {
+        if (!node || !node.getAttribute) return false;
+        const styleAttr = (node.getAttribute('style') || '').toLowerCase();
+        const classAttr = (node.getAttribute('class') || '').toLowerCase();
+        if (styleAttr.includes('mso-list')) return true;
+        if (classAttr.includes('msolistparagraph')) return true;
+        return false;
+    },
+
+    extractWordListItem(node) {
+        const clone = node.cloneNode(true);
+        let markerText = '';
+        let markerSpan = null;
+
+        const markerSpans = clone.querySelectorAll('span');
+        markerSpans.forEach(span => {
+            const styleAttr = (span.getAttribute('style') || '').toLowerCase();
+            if (styleAttr.includes('mso-list')) {
+                if (!markerText) {
+                    markerText = span.textContent || '';
+                }
+                markerSpan = span;
+            }
+        });
+
+        if (!markerSpan) {
+            const firstSpan = clone.firstElementChild && clone.firstElementChild.tagName === 'SPAN'
+                ? clone.firstElementChild
+                : null;
+            if (firstSpan) {
+                const text = (firstSpan.textContent || '').replace(/\u00a0/g, ' ').trim();
+                if (/^(?:[\u2022\u2023\u25E6\u2024\u00B7\u2043\-]|\d+[\.)]?|[a-z]{1,2}[\.)]?|[ivxlcdm]{1,4}[\.)]?)$/i.test(text)) {
+                    markerText = markerText || text;
+                    markerSpan = firstSpan;
+                }
+            }
+        }
+
+        if (markerSpan) {
+            markerSpan.remove();
+        }
+
+        let content = clone.innerHTML.trim();
+        if (!content) {
+            content = '&nbsp;';
+        }
+
+        let type = 'ul';
+        const normalizedMarker = (markerText || '').replace(/\u00a0/g, '').trim();
+        if (/^(?:\d+|[a-z]{1,2}|[ivxlcdm]{1,4})[\.)]?$/i.test(normalizedMarker)) {
+            type = 'ol';
+        }
+
+        return { type, content };
     },
 
     /**

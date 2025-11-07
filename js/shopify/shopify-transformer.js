@@ -301,13 +301,13 @@ const ShopifyTransformer = {
     },
 
     /**
-     * Fix all links to add rel="noopener" and target="_blank"
+     * Fix all links to add rel="noopener"
      * Ensures rel="noopener" comes before href attribute
      * Optionally removes domain from links (keeps only pathname and search/hash)
      * @param {string} html - HTML string
      * @param {Object} options - Options object
      * @param {boolean} options.sopRemoveDomain - If true, remove domain from links
-     * @returns {string} - HTML with all links having rel="noopener" and target="_blank"
+     * @returns {string} - HTML with all links having rel="noopener"
      */
     fixAllLinks(html, options = {}) {
         // Use regex to replace anchor tags and ensure attribute order
@@ -340,25 +340,18 @@ const ShopifyTransformer = {
                 }
             }
             
-            // Build new attributes in desired order: rel, target, href, then others
+            // Build new attributes in desired order: rel, href, then others
             const orderedAttrs = [];
             
             // 1. rel="noopener" (always first)
             orderedAttrs.push('rel="noopener"');
             
-            // 2. target="_blank" (if not already set, or use existing)
-            if (attrMap['target']) {
-                orderedAttrs.push(`target="${attrMap['target'].value}"`);
-            } else {
-                orderedAttrs.push('target="_blank"');
-            }
-            
-            // 3. href (if exists)
+            // 2. href (if exists)
             if (attrMap['href']) {
                 orderedAttrs.push(`href="${attrMap['href'].value}"`);
             }
             
-            // 4. Other attributes (preserve existing order for non-standard attrs)
+            // 3. Other attributes (preserve existing order for non-standard attrs)
             Object.keys(attrMap).forEach(key => {
                 const lowerKey = key.toLowerCase();
                 if (lowerKey !== 'rel' && lowerKey !== 'target' && lowerKey !== 'href') {
