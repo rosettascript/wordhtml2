@@ -265,11 +265,6 @@ const OutputRenderer = {
         previewContainer.className = 'preview-container';
         
         // If in edit mode, add rich text editor toolbar
-        if (this.editMode) {
-            const toolbar = this.createRichTextToolbar();
-            previewContainer.appendChild(toolbar);
-        }
-        
         // Add custom CSS if provided (add it first, before HTML content)
         if (customCSS && customCSS.trim()) {
             let cssContent = customCSS.trim();
@@ -402,10 +397,27 @@ const OutputRenderer = {
         this.outputElement.classList.add('preview-mode');
         if (this.editMode) {
             this.outputElement.classList.add('edit-mode');
-            this.updateToolbarStates();
+            this.renderToolbar();
         } else {
             this.outputElement.classList.remove('edit-mode');
+            this.clearToolbar();
         }
+    },
+
+    renderToolbar() {
+        const container = document.getElementById('output-toolbar-container');
+        if (!container) return;
+
+        container.innerHTML = '';
+        const toolbar = this.createRichTextToolbar();
+        container.appendChild(toolbar);
+        this.updateToolbarStates();
+    },
+
+    clearToolbar() {
+        const container = document.getElementById('output-toolbar-container');
+        if (!container) return;
+        container.innerHTML = '';
     },
 
     /**
@@ -537,7 +549,10 @@ const OutputRenderer = {
     updateToolbarStates() {
         if (!this.editMode || !this.outputElement) return;
 
-        const toolbar = this.outputElement.querySelector('.rich-text-toolbar');
+        const toolbarContainer = document.getElementById('output-toolbar-container');
+        if (!toolbarContainer) return;
+
+        const toolbar = toolbarContainer.querySelector('.rich-text-toolbar');
         const contentDiv = this.outputElement.querySelector('.preview-content');
         if (!toolbar || !contentDiv) return;
 
