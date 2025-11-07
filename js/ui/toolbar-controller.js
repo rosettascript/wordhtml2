@@ -8,7 +8,8 @@ const ToolbarController = {
     options: {
         sop: false,
         sopRemoveSpacing: false,
-        sopRemoveDomain: false
+        sopRemoveDomain: false,
+        sopDisableSources: true
     },
     onChangeCallback: null,
 
@@ -19,7 +20,7 @@ const ToolbarController = {
         shopify: [
             'Remove H1 tags and content',
             'Combine lists into single UL tags',
-            'Convert Sources lists to numbered paragraphs',
+            'Convert Sources lists to numbered paragraphs (optional)',
             'Add rel="noopener" to all links',
             'Remove em tags',
             'Add spacing between sections'
@@ -35,16 +36,25 @@ const ToolbarController = {
      * @param {HTMLElement} elements.sop - SOP radio button
      * @param {HTMLElement} elements.sopRemoveSpacing - SOP Remove Spacing radio button
      * @param {HTMLElement} elements.sopRemoveDomain - SOP Remove Domain radio button
+     * @param {HTMLElement} elements.sopDisableSources - SOP Disable Sources formatting checkbox
      * @param {HTMLElement} elements.sopSubOptions - SOP sub-options container
      * @param {Function} onChangeCallback - Callback when options change
+     * @param {Object} initialOptions - Saved options to initialize with
      */
-    init(elements, onChangeCallback) {
+    init(elements, onChangeCallback, initialOptions = null) {
         if (!elements || !onChangeCallback) {
             console.error('ToolbarController: elements and onChangeCallback are required');
             return;
         }
 
         this.onChangeCallback = onChangeCallback;
+
+        if (initialOptions && typeof initialOptions === 'object') {
+            this.options = {
+                ...this.options,
+                ...initialOptions
+            };
+        }
 
         // Initialize mode from select element
         if (elements.modeSelect) {
@@ -75,6 +85,7 @@ const ToolbarController = {
                     this.options.sop = false;
                     this.options.sopRemoveSpacing = false;
                     this.options.sopRemoveDomain = false;
+                    this.options.sopDisableSources = false;
                     const sopCheckbox = document.getElementById('sop');
                     if (sopCheckbox) {
                         sopCheckbox.checked = false;
@@ -87,6 +98,10 @@ const ToolbarController = {
                     const sopRemoveDomainCheckbox = document.getElementById('sop-remove-domain');
                     if (sopRemoveDomainCheckbox) {
                         sopRemoveDomainCheckbox.checked = false;
+                    }
+                    const sopDisableSourcesCheckbox = document.getElementById('sop-disable-sources');
+                    if (sopDisableSourcesCheckbox) {
+                        sopDisableSourcesCheckbox.checked = false;
                     }
                     if (elements.sopSubOptions) {
                         this.updateSopSubOptionsVisibility(elements.sopSubOptions);
@@ -123,6 +138,14 @@ const ToolbarController = {
         if (elements.sopRemoveDomain) {
             elements.sopRemoveDomain.addEventListener('change', (e) => {
                 this.options.sopRemoveDomain = e.target.checked;
+                this.notifyChange();
+            });
+        }
+
+        // SOP Disable Sources checkbox handler
+        if (elements.sopDisableSources) {
+            elements.sopDisableSources.addEventListener('change', (e) => {
+                this.options.sopDisableSources = e.target.checked;
                 this.notifyChange();
             });
         }
@@ -248,11 +271,24 @@ const ToolbarController = {
         if (sopSubOptions) {
             if (this.options.sop) {
                 sopSubOptions.style.display = 'block';
+                const sopRemoveSpacingCheckbox = document.getElementById('sop-remove-spacing');
+                if (sopRemoveSpacingCheckbox) {
+                    sopRemoveSpacingCheckbox.checked = this.options.sopRemoveSpacing;
+                }
+                const sopRemoveDomainCheckbox = document.getElementById('sop-remove-domain');
+                if (sopRemoveDomainCheckbox) {
+                    sopRemoveDomainCheckbox.checked = this.options.sopRemoveDomain;
+                }
+                const sopDisableSourcesCheckbox = document.getElementById('sop-disable-sources');
+                if (sopDisableSourcesCheckbox) {
+                    sopDisableSourcesCheckbox.checked = this.options.sopDisableSources;
+                }
             } else {
                 sopSubOptions.style.display = 'none';
                 // Uncheck sub-options when SOP is unchecked
                 this.options.sopRemoveSpacing = false;
                 this.options.sopRemoveDomain = false;
+                this.options.sopDisableSources = false;
                 const sopRemoveSpacingCheckbox = document.getElementById('sop-remove-spacing');
                 if (sopRemoveSpacingCheckbox) {
                     sopRemoveSpacingCheckbox.checked = false;
@@ -260,6 +296,10 @@ const ToolbarController = {
                 const sopRemoveDomainCheckbox = document.getElementById('sop-remove-domain');
                 if (sopRemoveDomainCheckbox) {
                     sopRemoveDomainCheckbox.checked = false;
+                }
+                const sopDisableSourcesCheckbox = document.getElementById('sop-disable-sources');
+                if (sopDisableSourcesCheckbox) {
+                    sopDisableSourcesCheckbox.checked = false;
                 }
             }
         }

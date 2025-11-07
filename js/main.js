@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sop = document.getElementById('sop');
     const sopRemoveSpacing = document.getElementById('sop-remove-spacing');
     const sopRemoveDomain = document.getElementById('sop-remove-domain');
+    const sopDisableSources = document.getElementById('sop-disable-sources');
     const sopSubOptions = document.getElementById('sop-sub-options');
     const customCSSInput = document.getElementById('custom-css');
     const inputEmptyState = document.getElementById('input-empty-state');
@@ -28,6 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadButton = document.getElementById('download-output');
     const inputCount = document.getElementById('input-count');
     const darkModeToggle = document.getElementById('dark-mode-toggle');
+
+    const SHOPIFY_OPTIONS_STORAGE_KEY = 'wordhtml2-shopify-options';
+    let savedShopifyOptions = null;
 
     // Dark mode functions
     function getThemePreference() {
@@ -95,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const savedMode = localStorage.getItem('wordhtml2-mode');
             const savedCSS = localStorage.getItem('wordhtml2-custom-css');
+            const savedShopify = localStorage.getItem(SHOPIFY_OPTIONS_STORAGE_KEY);
             
             if (savedMode && modeSelect) {
                 modeSelect.value = savedMode;
@@ -102,6 +107,31 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (savedCSS && customCSSInput) {
                 customCSSInput.value = savedCSS;
+            }
+
+            if (savedShopify) {
+                try {
+                    const parsed = JSON.parse(savedShopify);
+                    if (parsed && typeof parsed === 'object') {
+                        savedShopifyOptions = {
+                            sopRemoveSpacing: !!parsed.sopRemoveSpacing,
+                            sopRemoveDomain: !!parsed.sopRemoveDomain,
+                            sopDisableSources: !!parsed.sopDisableSources
+                        };
+                    }
+                } catch (err) {
+                    console.warn('Failed to parse saved Shopify options:', err);
+                }
+            }
+
+            if (sopRemoveSpacing) {
+                sopRemoveSpacing.checked = savedShopifyOptions ? savedShopifyOptions.sopRemoveSpacing : false;
+            }
+            if (sopRemoveDomain) {
+                sopRemoveDomain.checked = savedShopifyOptions ? savedShopifyOptions.sopRemoveDomain : false;
+            }
+            if (sopDisableSources) {
+                sopDisableSources.checked = savedShopifyOptions ? savedShopifyOptions.sopDisableSources : true;
             }
         } catch (e) {
             console.warn('Failed to load settings from localStorage:', e);
@@ -117,6 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (customCSSInput) {
                 localStorage.setItem('wordhtml2-custom-css', customCSSInput.value);
             }
+
+            const optionsToSave = {
+                sopRemoveSpacing: !!(sopRemoveSpacing && sopRemoveSpacing.checked),
+                sopRemoveDomain: !!(sopRemoveDomain && sopRemoveDomain.checked),
+                sopDisableSources: !!(sopDisableSources && sopDisableSources.checked)
+            };
+            localStorage.setItem(SHOPIFY_OPTIONS_STORAGE_KEY, JSON.stringify(optionsToSave));
         } catch (e) {
             console.warn('Failed to save settings to localStorage:', e);
         }
@@ -272,11 +309,12 @@ document.addEventListener('DOMContentLoaded', () => {
         sop: sop,
         sopRemoveSpacing: sopRemoveSpacing,
         sopRemoveDomain: sopRemoveDomain,
+        sopDisableSources: sopDisableSources,
         sopSubOptions: sopSubOptions
     }, () => {
         saveSettings();
         updateOutput();
-    });
+    }, savedShopifyOptions);
 
     // Save settings when mode changes
     if (modeSelect) {

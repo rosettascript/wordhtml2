@@ -11,6 +11,7 @@ const ShopifyTransformer = {
      * @param {boolean} options.sop - Apply SOP formatting (if true, use complex section detection)
      * @param {boolean} options.sopRemoveSpacing - Remove spacing when SOP is enabled
      * @param {boolean} options.sopRemoveDomain - Remove domain from links when SOP is enabled
+     * @param {boolean} options.sopDisableSources - Keep original Sources list formatting
      * @returns {string} - Transformed HTML
      */
     transform(html, options = {}) {
@@ -32,7 +33,7 @@ const ShopifyTransformer = {
         result = this.removeEmTags(result);
 
         // 2. Convert Sources list to numbered paragraphs (after removing em tags, so we can add fresh em tags)
-        result = this.convertSourcesListToParagraphs(result);
+        result = this.convertSourcesListToParagraphs(result, options);
 
         // 3. Add ':' to Key Takeaways if it doesn't have one
         result = this.fixKeyTakeawaysColon(result);
@@ -65,7 +66,7 @@ const ShopifyTransformer = {
      * @param {Object} options - Options
      * @returns {string} - Processed HTML
      */
-    applySOPFormatting(html, options) {
+    applySOPFormatting(html, options = {}) {
         // SOP mode should use the same simple tweaks approach to preserve all content
         // The user wants the full regular output with tweaks, not filtered sections
         let result = this.applyBasicTweaks(html, options);
@@ -109,14 +110,14 @@ const ShopifyTransformer = {
      * @param {Object} options - Options
      * @returns {string} - Processed HTML
      */
-    applyBasicTweaks(html, options) {
+    applyBasicTweaks(html, options = {}) {
         let result = html;
         // First, clean up malformed headings with br tags (from Word)
         result = this.removeBrFromHeadings(result);
         // Remove <em> tags first
         result = this.removeEmTags(result);
         // Convert Sources list to numbered paragraphs (after removing em tags)
-        result = this.convertSourcesListToParagraphs(result);
+        result = this.convertSourcesListToParagraphs(result, options);
         result = this.fixKeyTakeawaysColon(result);
         result = this.removeH1Tags(result);
         result = this.fixAllLinks(result, options);
@@ -454,8 +455,9 @@ const ShopifyTransformer = {
      * @param {string} html - HTML string
      * @returns {string} - HTML with sources list converted to paragraphs
      */
-    convertSourcesListToParagraphs(html) {
+    convertSourcesListToParagraphs(html, options = {}) {
         const tempDiv = HtmlParser.parseHTML(html);
+        const disableSources = !!options.sopDisableSources;
         
         // Find all paragraphs
         const paragraphs = tempDiv.querySelectorAll('p');
@@ -482,10 +484,21 @@ const ShopifyTransformer = {
                     const tagName = current.tagName ? current.tagName.toLowerCase() : '';
                     
                     // If we found an ordered list right after Sources
-                    if (tagName === 'ol') {
+                    if (tagName === 'ol' || (disableSources && tagName === 'ul')) {
                         const listItems = current.querySelectorAll('li');
                         
                         if (listItems.length > 0) {
+                            if (disableSources) {
+                                listItems.forEach((li) => {
+                                    const originalHTML = li.innerHTML.trim();
+                                    if (!originalHTML) return;
+                                    if (!/^<em[\s>]/i.test(originalHTML) || !/<\/em>\s*$/i.test(originalHTML)) {
+                                        li.innerHTML = `<em>${originalHTML}</em>`;
+                                    }
+                                });
+                                break;
+                            }
+
                             // Convert list items to numbered paragraphs
                             listItems.forEach((li, index) => {
                                 // Get the innerHTML of the list item
