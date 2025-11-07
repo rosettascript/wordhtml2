@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const outputDisplay = document.getElementById('output-display');
     const copyButton = document.getElementById('copy-output');
     const previewToggle = document.getElementById('preview-toggle');
+    const editOutputButton = document.getElementById('edit-output');
     const modeSelect = document.getElementById('mode-select');
     const shopifyOptions = document.getElementById('shopify-options');
     const sop = document.getElementById('sop');
@@ -413,6 +414,97 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const updateEditButtonState = (isEditing) => {
+        if (!editOutputButton) return;
+        editOutputButton.classList.toggle('active', isEditing);
+        editOutputButton.setAttribute('aria-pressed', isEditing ? 'true' : 'false');
+        editOutputButton.setAttribute('title', isEditing ? 'Exit edit mode (Ctrl+E)' : 'Edit output (Ctrl+E)');
+        editOutputButton.setAttribute('aria-label', isEditing ? 'Exit edit mode' : 'Edit output');
+    };
+
+    const focusOutputEditor = () => {
+        if (!outputDisplay) return;
+        if (typeof OutputRenderer.isPreviewMode === 'function' && OutputRenderer.isPreviewMode()) {
+            const previewContent = outputDisplay.querySelector('.preview-content');
+            if (previewContent) {
+                previewContent.focus();
+            }
+        } else {
+            const editor = outputDisplay.querySelector('.output-editor');
+            if (editor) {
+                editor.focus();
+            }
+        }
+    };
+
+    const toggleEditMode = () => {
+        if (typeof OutputRenderer.toggleEdit !== 'function') return false;
+        const isEditing = OutputRenderer.toggleEdit();
+        updateEditButtonState(isEditing);
+        if (isEditing) {
+            // Wait for render cycle before focusing
+            setTimeout(() => {
+                focusOutputEditor();
+                if (outputDisplay) {
+                    outputDisplay.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+                }
+            }, 0);
+        }
+        return isEditing;
+    };
+
+    if (editOutputButton) {
+        editOutputButton.addEventListener('click', () => {
+            toggleEditMode();
+        });
+    }
+
+    updateEditButtonState(typeof OutputRenderer.isEditMode === 'function' && OutputRenderer.isEditMode());
+
+    if (outputDisplay) {
+        outputDisplay.addEventListener('click', (e) => {
+            const isEditing = typeof OutputRenderer.isEditMode === 'function' && OutputRenderer.isEditMode();
+            const isPreview = typeof OutputRenderer.isPreviewMode === 'function' && OutputRenderer.isPreviewMode();
+
+            if (isEditing && isPreview) {
+                return; // let the browser handle caret placement inside the editable content
+            }
+
+            if (e.target === outputDisplay && document.activeElement !== outputDisplay) {
+                outputDisplay.focus({ preventScroll: true });
+            }
+        });
+
+        outputDisplay.addEventListener('keydown', (e) => {
+            const modifier = e.ctrlKey || e.metaKey;
+            if (!modifier || e.key.toLowerCase() !== 'a') {
+                return;
+            }
+
+            const target = e.target;
+            if (!target) return;
+
+            // Allow default behaviour inside editable/content elements
+            if (target.isContentEditable || target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
+                return;
+            }
+
+            e.preventDefault();
+
+            const selection = window.getSelection();
+            if (!selection) return;
+
+            const range = document.createRange();
+            let container = outputDisplay.querySelector('.preview-container');
+            if (!container || !(typeof OutputRenderer.isPreviewMode === 'function' && OutputRenderer.isPreviewMode())) {
+                container = outputDisplay.querySelector('pre, code') || outputDisplay;
+            }
+            range.selectNodeContents(container);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        });
+    }
+
     // Preview toggle handler
     if (previewToggle) {
         previewToggle.addEventListener('click', () => {
@@ -703,6 +795,13 @@ document.addEventListener('DOMContentLoaded', () => {
         togglePreview: () => {
             if (previewToggle) {
                 previewToggle.click();
+            }
+        },
+        toggleEdit: () => {
+            if (editOutputButton) {
+                editOutputButton.click();
+            } else {
+                toggleEditMode();
             }
         }
     });

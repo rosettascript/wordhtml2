@@ -338,11 +338,13 @@ const OutputRenderer = {
         if (this.editMode) {
             contentDiv.contentEditable = 'true';
             contentDiv.setAttribute('spellcheck', 'false');
+            contentDiv.setAttribute('tabindex', '0');
             
             // Track changes
             contentDiv.addEventListener('input', () => {
                 this.manuallyEdited = true;
                 this.editedHTML = contentDiv.innerHTML;
+                this.updateToolbarStates();
             });
             
             // Handle keyboard shortcuts for formatting
@@ -387,6 +389,11 @@ const OutputRenderer = {
                     }
                 }
             });
+
+            const scheduleUpdate = () => setTimeout(() => this.updateToolbarStates(), 0);
+            contentDiv.addEventListener('mouseup', scheduleUpdate);
+            contentDiv.addEventListener('keyup', scheduleUpdate);
+            contentDiv.addEventListener('focus', scheduleUpdate);
         }
         
         previewContainer.appendChild(contentDiv);
@@ -395,6 +402,9 @@ const OutputRenderer = {
         this.outputElement.classList.add('preview-mode');
         if (this.editMode) {
             this.outputElement.classList.add('edit-mode');
+            this.updateToolbarStates();
+        } else {
+            this.outputElement.classList.remove('edit-mode');
         }
     },
 
@@ -411,22 +421,22 @@ const OutputRenderer = {
             { command: 'undo', icon: '↶', title: 'Undo (Ctrl+Z)', className: 'action-undo' },
             { command: 'redo', icon: '↷', title: 'Redo (Ctrl+Y)', className: 'action-redo' },
             { type: 'separator' },
-            { command: 'bold', icon: 'B', title: 'Bold (Ctrl+B)', className: 'format-bold' },
-            { command: 'italic', icon: 'I', title: 'Italic (Ctrl+I)', className: 'format-italic' },
-            { command: 'underline', icon: 'U', title: 'Underline (Ctrl+U)', className: 'format-underline' },
+            { command: 'bold', icon: 'B', title: 'Bold (Ctrl+B)', className: 'format-bold', toggleState: true },
+            { command: 'italic', icon: 'I', title: 'Italic (Ctrl+I)', className: 'format-italic', toggleState: true },
+            { command: 'underline', icon: 'U', title: 'Underline (Ctrl+U)', className: 'format-underline', toggleState: true },
             { type: 'separator' },
-            { command: 'formatBlock', value: '<h1>', icon: 'H1', title: 'Heading 1' },
-            { command: 'formatBlock', value: '<h2>', icon: 'H2', title: 'Heading 2' },
-            { command: 'formatBlock', value: '<h3>', icon: 'H3', title: 'Heading 3' },
-            { command: 'formatBlock', value: '<h4>', icon: 'H4', title: 'Heading 4' },
-            { command: 'formatBlock', value: '<p>', icon: 'P', title: 'Paragraph' },
+            { command: 'formatBlock', value: '<p>', icon: 'P', title: 'Paragraph', formatValue: '<p>' },
+            { command: 'formatBlock', value: '<h1>', icon: 'H1', title: 'Heading 1', formatValue: '<h1>' },
+            { command: 'formatBlock', value: '<h2>', icon: 'H2', title: 'Heading 2', formatValue: '<h2>' },
+            { command: 'formatBlock', value: '<h3>', icon: 'H3', title: 'Heading 3', formatValue: '<h3>' },
+            { command: 'formatBlock', value: '<h4>', icon: 'H4', title: 'Heading 4', formatValue: '<h4>' },
             { type: 'separator' },
-            { command: 'insertUnorderedList', icon: '• List', title: 'Bullet List' },
-            { command: 'insertOrderedList', icon: '1. List', title: 'Numbered List' },
+            { command: 'insertUnorderedList', icon: '• List', title: 'Bullet List', toggleState: true },
+            { command: 'insertOrderedList', icon: '1. List', title: 'Numbered List', toggleState: true },
             { type: 'separator' },
-            { command: 'justifyLeft', icon: '≡', title: 'Align Left' },
-            { command: 'justifyCenter', icon: '≣', title: 'Align Center' },
-            { command: 'justifyRight', icon: '≢', title: 'Align Right' },
+            { command: 'justifyLeft', icon: '≡', title: 'Align Left', toggleState: true },
+            { command: 'justifyCenter', icon: '≣', title: 'Align Center', toggleState: true },
+            { command: 'justifyRight', icon: '≢', title: 'Align Right', toggleState: true },
             { type: 'separator' },
             { command: 'removeFormat', icon: '✗', title: 'Clear Formatting' }
         ];
@@ -453,13 +463,22 @@ const OutputRenderer = {
                     } else {
                         document.execCommand(btn.command, false, null);
                     }
-                    // Restore focus to the content area
+                    this.updateToolbarStates();
                     const contentDiv = this.outputElement.querySelector('.preview-content');
                     if (contentDiv) {
                         contentDiv.focus();
                     }
                 });
-                
+
+                if (btn.toggleState) {
+                    button.dataset.commandName = btn.command;
+                    button.classList.add('toggle-button');
+                }
+
+                if (btn.formatValue) {
+                    button.dataset.formatBlock = btn.value;
+                }
+
                 toolbar.appendChild(button);
             }
         });
@@ -487,21 +506,72 @@ const OutputRenderer = {
      */
     toggleEdit() {
         this.editMode = !this.editMode;
-        
-        // If turning ON edit mode, automatically switch to preview mode
-        if (this.editMode && !this.previewMode) {
-            this.previewMode = true;
-        }
-        
-        // If turning off edit mode, keep preview mode on
-        // (users can manually toggle preview if they want code view)
-        
+
         // Re-render with current HTML and CSS
         if (this.currentHTML !== undefined && this.currentHTML !== null) {
             this.render(this.currentHTML, this.customCSS);
         }
         
+        if (this.editMode) {
+            this.attachSelectionListeners();
+        } else {
+            this.detachSelectionListeners();
+        }
+
         return this.editMode;
+    },
+
+    attachSelectionListeners() {
+        const update = () => this.updateToolbarStates();
+        document.addEventListener('selectionchange', update);
+        this._selectionListener = update;
+    },
+
+    detachSelectionListeners() {
+        if (this._selectionListener) {
+            document.removeEventListener('selectionchange', this._selectionListener);
+            this._selectionListener = null;
+        }
+    },
+
+    updateToolbarStates() {
+        if (!this.editMode || !this.outputElement) return;
+
+        const toolbar = this.outputElement.querySelector('.rich-text-toolbar');
+        const contentDiv = this.outputElement.querySelector('.preview-content');
+        if (!toolbar || !contentDiv) return;
+
+        const selection = window.getSelection();
+        const isActive = selection && selection.rangeCount > 0 && contentDiv.contains(selection.anchorNode);
+
+        const toggleButtons = toolbar.querySelectorAll('.toggle-button');
+        toggleButtons.forEach(button => {
+            const command = button.dataset.commandName;
+            let active = false;
+            if (isActive && command) {
+                try {
+                    active = document.queryCommandState(command);
+                } catch (_) {
+                    active = false;
+                }
+            }
+            button.classList.toggle('active', !!active);
+        });
+
+        const blockButtons = toolbar.querySelectorAll('[data-format-block]');
+        let blockValue = '';
+        if (isActive) {
+            try {
+                blockValue = document.queryCommandValue('formatBlock') || '';
+            } catch (_) {
+                blockValue = '';
+            }
+        }
+        blockButtons.forEach(button => {
+            const value = button.dataset.formatBlock || '';
+            const normalize = (val) => val.replace(/[<>]/g, '').toLowerCase();
+            button.classList.toggle('active', normalize(blockValue) === normalize(value));
+        });
     },
 
     /**

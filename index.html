@@ -245,6 +245,12 @@
                                         <polyline points="8 6 2 12 8 18"></polyline>
                                     </svg>
                                 </button>
+                                <button id="edit-output" class="panel-button" title="Edit output (Ctrl+E)" aria-label="Edit output" aria-pressed="false">
+                                    <svg class="icon edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                                    </svg>
+                                </button>
                                 <button id="copy-output" class="panel-button panel-button-primary" title="Copy HTML (Ctrl+C)" aria-label="Copy HTML">
                                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -269,7 +275,7 @@
                                 <p class="empty-text">HTML Output Will Appear Here</p>
                                 <p class="empty-subtext">Once you paste content, the converted HTML will be displayed here</p>
                             </div>
-                            <div id="output-display" class="panel-output"></div>
+                            <div id="output-display" class="panel-output" tabindex="0"></div>
                         </div>
                     </div>
                 </div>
