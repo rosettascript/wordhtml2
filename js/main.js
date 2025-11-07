@@ -17,11 +17,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const editOutputButton = document.getElementById('edit-output');
     const modeSelect = document.getElementById('mode-select');
     const shopifyOptions = document.getElementById('shopify-options');
+    const shoppablesOptions = document.getElementById('shoppables-options');
     const sop = document.getElementById('sop');
     const sopRemoveSpacing = document.getElementById('sop-remove-spacing');
     const sopRemoveDomain = document.getElementById('sop-remove-domain');
     const sopDisableSources = document.getElementById('sop-disable-sources');
     const sopSubOptions = document.getElementById('sop-sub-options');
+    const shoppablesSop = document.getElementById('shoppables-sop');
+    const shoppablesSopSubOptions = document.getElementById('shoppables-sop-sub-options');
+    const shoppablesBrReadAlso = document.getElementById('shoppables-br-read-also');
+    const shoppablesBrSources = document.getElementById('shoppables-br-sources');
+    const shoppablesDisableSources = document.getElementById('shoppables-disable-sources');
     const customCSSInput = document.getElementById('custom-css');
     const inputEmptyState = document.getElementById('input-empty-state');
     const outputEmptyState = document.getElementById('output-empty-state');
@@ -31,7 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const darkModeToggle = document.getElementById('dark-mode-toggle');
 
     const SHOPIFY_OPTIONS_STORAGE_KEY = 'wordhtml2-shopify-options';
+    const SHOPPABLES_OPTIONS_STORAGE_KEY = 'wordhtml2-shoppables-options';
     let savedShopifyOptions = null;
+    let savedShoppablesOptions = null;
 
     // Dark mode functions
     function getThemePreference() {
@@ -100,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const savedMode = localStorage.getItem('wordhtml2-mode');
             const savedCSS = localStorage.getItem('wordhtml2-custom-css');
             const savedShopify = localStorage.getItem(SHOPIFY_OPTIONS_STORAGE_KEY);
+            const savedShoppables = localStorage.getItem(SHOPPABLES_OPTIONS_STORAGE_KEY);
             
             if (savedMode && modeSelect) {
                 modeSelect.value = savedMode;
@@ -124,6 +133,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            if (savedShoppables) {
+                try {
+                    const parsedShoppables = JSON.parse(savedShoppables);
+                    if (parsedShoppables && typeof parsedShoppables === 'object') {
+                        savedShoppablesOptions = {
+                            shoppablesBrReadAlso: !!parsedShoppables.shoppablesBrReadAlso,
+                            shoppablesBrSources: !!parsedShoppables.shoppablesBrSources,
+                            shoppablesDisableSources: !!parsedShoppables.shoppablesDisableSources
+                        };
+                    }
+                } catch (err) {
+                    console.warn('Failed to parse saved Shoppables options:', err);
+                }
+            }
+
             if (sopRemoveSpacing) {
                 sopRemoveSpacing.checked = savedShopifyOptions ? savedShopifyOptions.sopRemoveSpacing : false;
             }
@@ -132,6 +156,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (sopDisableSources) {
                 sopDisableSources.checked = savedShopifyOptions ? savedShopifyOptions.sopDisableSources : true;
+            }
+            if (shoppablesBrReadAlso) {
+                shoppablesBrReadAlso.checked = savedShoppablesOptions ? savedShoppablesOptions.shoppablesBrReadAlso : false;
+            }
+            if (shoppablesBrSources) {
+                shoppablesBrSources.checked = savedShoppablesOptions ? savedShoppablesOptions.shoppablesBrSources : false;
+            }
+            if (shoppablesDisableSources) {
+                shoppablesDisableSources.checked = savedShoppablesOptions ? savedShoppablesOptions.shoppablesDisableSources : false;
             }
         } catch (e) {
             console.warn('Failed to load settings from localStorage:', e);
@@ -154,6 +187,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 sopDisableSources: !!(sopDisableSources && sopDisableSources.checked)
             };
             localStorage.setItem(SHOPIFY_OPTIONS_STORAGE_KEY, JSON.stringify(optionsToSave));
+
+            const shoppablesToSave = {
+                shoppablesBrReadAlso: !!(shoppablesBrReadAlso && shoppablesBrReadAlso.checked),
+                shoppablesBrSources: !!(shoppablesBrSources && shoppablesBrSources.checked),
+                shoppablesDisableSources: !!(shoppablesDisableSources && shoppablesDisableSources.checked)
+            };
+            localStorage.setItem(SHOPPABLES_OPTIONS_STORAGE_KEY, JSON.stringify(shoppablesToSave));
         } catch (e) {
             console.warn('Failed to save settings to localStorage:', e);
         }
@@ -310,11 +350,20 @@ document.addEventListener('DOMContentLoaded', () => {
         sopRemoveSpacing: sopRemoveSpacing,
         sopRemoveDomain: sopRemoveDomain,
         sopDisableSources: sopDisableSources,
-        sopSubOptions: sopSubOptions
+        sopSubOptions: sopSubOptions,
+        shoppablesOptions: shoppablesOptions,
+        shoppablesSop: shoppablesSop,
+        shoppablesSopSubOptions: shoppablesSopSubOptions,
+        shoppablesBrReadAlso: shoppablesBrReadAlso,
+        shoppablesBrSources: shoppablesBrSources,
+        shoppablesDisableSources: shoppablesDisableSources
     }, () => {
         saveSettings();
         updateOutput();
-    }, savedShopifyOptions);
+    }, {
+        ...(savedShopifyOptions || {}),
+        ...(savedShoppablesOptions || {})
+    });
 
     // Save settings when mode changes
     if (modeSelect) {
@@ -700,6 +749,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Apply transformations based on mode
         if (mode === 'shopify') {
             cleanedHTML = ShopifyTransformer.transform(cleanedHTML, options);
+        } else if (mode === 'shoppables') {
+            cleanedHTML = ShoppablesTransformer.transform(cleanedHTML, options);
         }
 
         // Render output with custom CSS
@@ -847,6 +898,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Apply transformations based on mode
         if (mode === 'shopify') {
             cleanedHTML = ShopifyTransformer.transform(cleanedHTML, options);
+        } else if (mode === 'shoppables') {
+            cleanedHTML = ShoppablesTransformer.transform(cleanedHTML, options);
         }
 
         // Get custom CSS

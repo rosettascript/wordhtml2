@@ -136,6 +136,7 @@
                         <select id="mode-select" class="mode-select" aria-label="Select output mode">
                             <option value="regular">Regular</option>
                             <option value="shopify">Shopify Blogs</option>
+                            <option value="shoppables">Shoppables</option>
                         </select>
                     </div>
 
@@ -172,6 +173,27 @@
                                 </label>
                                 <label class="checkbox-label">
                                     <input type="checkbox" id="sop-disable-sources" class="option-checkbox" value="disable-sources" aria-label="Disable automatic sources formatting in SOP mode">
+                                    <span>Disable Auto Format Sources</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="shoppables-options" class="shopify-options" style="display: none;">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="shoppables-sop" class="option-checkbox" value="shoppables-sop" aria-label="Enable Shoppables SOP">
+                                <span>SOP (Standard Operating Procedure)</span>
+                            </label>
+                            <div id="shoppables-sop-sub-options" class="sop-sub-options" style="display: none;" role="group" aria-labelledby="shoppables-sop-label">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="shoppables-br-read-also" class="option-checkbox" value="br-read-also" aria-label="Insert line break before Read also section">
+                                    <span>&lt;br&gt; before Read also</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="shoppables-br-sources" class="option-checkbox" value="br-sources" aria-label="Insert line break before Sources section">
+                                    <span>&lt;br&gt; before Sources</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="shoppables-disable-sources" class="option-checkbox" value="disable-sources" aria-label="Disable automatic sources formatting for Shoppables">
                                     <span>Disable Auto Format Sources</span>
                                 </label>
                             </div>
@@ -467,6 +489,7 @@
     <script src="js/shopify/faq-processor.js"></script>
     <script src="js/shopify/sources-processor.js"></script>
     <script src="js/shopify/shopify-transformer.js"></script>
+    <script src="js/shoppables/shoppables-transformer.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>

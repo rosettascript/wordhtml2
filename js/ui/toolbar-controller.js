@@ -9,7 +9,11 @@ const ToolbarController = {
         sop: false,
         sopRemoveSpacing: false,
         sopRemoveDomain: false,
-        sopDisableSources: true
+        sopDisableSources: true,
+        shoppablesSop: false,
+        shoppablesBrReadAlso: false,
+        shoppablesBrSources: false,
+        shoppablesDisableSources: false
     },
     onChangeCallback: null,
 
@@ -25,6 +29,13 @@ const ToolbarController = {
             'Remove em tags',
             'Add spacing between sections'
         ],
+        shoppables: [
+            'Preserve existing H1 heading content',
+            'Auto-format Sources section with italicized numbered entries',
+            'Insert optional <br> before Read also / Sources sections',
+            'Add rel="noopener" and target="_blank" to all links',
+            'Clean up extra spacing without spacer paragraphs'
+        ],
         regular: []
     },
 
@@ -33,11 +44,17 @@ const ToolbarController = {
      * @param {Object} elements - DOM elements
      * @param {HTMLElement} elements.modeSelect - Mode select dropdown
      * @param {HTMLElement} elements.shopifyOptions - Shopify options container
+     * @param {HTMLElement} elements.shoppablesOptions - Shoppables options container
      * @param {HTMLElement} elements.sop - SOP radio button
      * @param {HTMLElement} elements.sopRemoveSpacing - SOP Remove Spacing radio button
      * @param {HTMLElement} elements.sopRemoveDomain - SOP Remove Domain radio button
      * @param {HTMLElement} elements.sopDisableSources - SOP Disable Sources formatting checkbox
      * @param {HTMLElement} elements.sopSubOptions - SOP sub-options container
+     * @param {HTMLElement} elements.shoppablesSop - Shoppables SOP checkbox
+     * @param {HTMLElement} elements.shoppablesSopSubOptions - Shoppables SOP sub-options container
+     * @param {HTMLElement} elements.shoppablesBrReadAlso - Shoppables <br> before Read also checkbox
+     * @param {HTMLElement} elements.shoppablesBrSources - Shoppables <br> before Sources checkbox
+     * @param {HTMLElement} elements.shoppablesDisableSources - Shoppables disable sources formatting checkbox
      * @param {Function} onChangeCallback - Callback when options change
      * @param {Object} initialOptions - Saved options to initialize with
      */
@@ -65,7 +82,7 @@ const ToolbarController = {
         if (elements.modeSelect) {
             elements.modeSelect.addEventListener('change', (e) => {
                 this.mode = e.target.value;
-                this.updateShopifyOptionsVisibility();
+                this.updateModeOptionVisibility();
                 this.updateFormatInfo();
                 
                 // If Shopify Blogs is selected, automatically check and lock SOP
@@ -80,12 +97,27 @@ const ToolbarController = {
                     if (elements.sopSubOptions) {
                         this.updateSopSubOptionsVisibility(elements.sopSubOptions);
                     }
+                    // Reset shoppables options when leaving mode
+                    this.resetShoppablesOptions(elements);
+                } else if (this.mode === 'shoppables') {
+                    this.options.shoppablesSop = true;
+                    const shoppablesSopCheckbox = document.getElementById('shoppables-sop');
+                    if (shoppablesSopCheckbox) {
+                        shoppablesSopCheckbox.checked = true;
+                        shoppablesSopCheckbox.disabled = true;
+                    }
+                    if (elements.shoppablesSopSubOptions) {
+                        this.updateShoppablesSubOptionsVisibility(elements.shoppablesSopSubOptions);
+                    }
+                    // Reset Shopify options when leaving mode
+                    this.resetShopifyOptions(elements);
                 } else {
                     // If Regular is selected, uncheck and enable SOP
                     this.options.sop = false;
                     this.options.sopRemoveSpacing = false;
                     this.options.sopRemoveDomain = false;
                     this.options.sopDisableSources = false;
+                    this.resetShoppablesOptions(elements);
                     const sopCheckbox = document.getElementById('sop');
                     if (sopCheckbox) {
                         sopCheckbox.checked = false;
@@ -150,11 +182,46 @@ const ToolbarController = {
             });
         }
 
+        // Shoppables SOP handler
+        if (elements.shoppablesSop) {
+            elements.shoppablesSop.addEventListener('change', (e) => {
+                if (e.target.disabled && !e.target.checked) {
+                    e.target.checked = true;
+                    return;
+                }
+                this.options.shoppablesSop = e.target.checked;
+                this.updateShoppablesSubOptionsVisibility(elements.shoppablesSopSubOptions);
+                this.notifyChange();
+            });
+        }
+
+        // Shoppables sub-option handlers
+        if (elements.shoppablesBrReadAlso) {
+            elements.shoppablesBrReadAlso.addEventListener('change', (e) => {
+                this.options.shoppablesBrReadAlso = e.target.checked;
+                this.notifyChange();
+            });
+        }
+
+        if (elements.shoppablesBrSources) {
+            elements.shoppablesBrSources.addEventListener('change', (e) => {
+                this.options.shoppablesBrSources = e.target.checked;
+                this.notifyChange();
+            });
+        }
+
+        if (elements.shoppablesDisableSources) {
+            elements.shoppablesDisableSources.addEventListener('change', (e) => {
+                this.options.shoppablesDisableSources = e.target.checked;
+                this.notifyChange();
+            });
+        }
+
         // Initialize format info toggle
         this.initFormatInfoToggle();
 
         // Initial state
-        this.updateShopifyOptionsVisibility();
+        this.updateModeOptionVisibility();
         this.updateFormatInfo();
         
         // If Shopify Blogs is initially selected, auto-check SOP
@@ -168,24 +235,38 @@ const ToolbarController = {
             if (elements.sopSubOptions) {
                 this.updateSopSubOptionsVisibility(elements.sopSubOptions);
             }
+        } else if (this.mode === 'shoppables') {
+            this.options.shoppablesSop = true;
+            const shoppablesSopCheckbox = document.getElementById('shoppables-sop');
+            if (shoppablesSopCheckbox) {
+                shoppablesSopCheckbox.checked = true;
+                shoppablesSopCheckbox.disabled = true;
+            }
+            if (elements.shoppablesSopSubOptions) {
+                this.updateShoppablesSubOptionsVisibility(elements.shoppablesSopSubOptions);
+            }
         }
         
         if (elements.sopSubOptions) {
             this.updateSopSubOptionsVisibility(elements.sopSubOptions);
         }
+        if (elements.shoppablesSopSubOptions) {
+            this.updateShoppablesSubOptionsVisibility(elements.shoppablesSopSubOptions);
+        }
     },
 
     /**
-     * Update Shopify options visibility
+     * Update Shopify/Shoppables options visibility
      */
-    updateShopifyOptionsVisibility() {
+    updateModeOptionVisibility() {
         const shopifyOptions = document.getElementById('shopify-options');
+        const shoppablesOptions = document.getElementById('shoppables-options');
+
         if (shopifyOptions) {
-            if (this.mode === 'shopify') {
-                shopifyOptions.style.display = 'block';
-            } else {
-                shopifyOptions.style.display = 'none';
-            }
+            shopifyOptions.style.display = this.mode === 'shopify' ? 'block' : 'none';
+        }
+        if (shoppablesOptions) {
+            shoppablesOptions.style.display = this.mode === 'shoppables' ? 'block' : 'none';
         }
     },
 
@@ -302,6 +383,85 @@ const ToolbarController = {
                     sopDisableSourcesCheckbox.checked = false;
                 }
             }
+        }
+    },
+
+    /**
+     * Update Shoppables SOP sub-options visibility
+     * @param {HTMLElement} shoppablesSopSubOptions - Shoppables SOP sub-options container
+     */
+    updateShoppablesSubOptionsVisibility(shoppablesSopSubOptions) {
+        if (shoppablesSopSubOptions) {
+            if (this.options.shoppablesSop) {
+                shoppablesSopSubOptions.style.display = 'block';
+                const brReadAlsoCheckbox = document.getElementById('shoppables-br-read-also');
+                if (brReadAlsoCheckbox) {
+                    brReadAlsoCheckbox.checked = this.options.shoppablesBrReadAlso;
+                }
+                const brSourcesCheckbox = document.getElementById('shoppables-br-sources');
+                if (brSourcesCheckbox) {
+                    brSourcesCheckbox.checked = this.options.shoppablesBrSources;
+                }
+                const disableSourcesCheckbox = document.getElementById('shoppables-disable-sources');
+                if (disableSourcesCheckbox) {
+                    disableSourcesCheckbox.checked = this.options.shoppablesDisableSources;
+                }
+            } else {
+                shoppablesSopSubOptions.style.display = 'none';
+                this.options.shoppablesBrReadAlso = false;
+                this.options.shoppablesBrSources = false;
+                this.options.shoppablesDisableSources = false;
+                const brReadAlsoCheckbox = document.getElementById('shoppables-br-read-also');
+                if (brReadAlsoCheckbox) {
+                    brReadAlsoCheckbox.checked = false;
+                }
+                const brSourcesCheckbox = document.getElementById('shoppables-br-sources');
+                if (brSourcesCheckbox) {
+                    brSourcesCheckbox.checked = false;
+                }
+                const disableSourcesCheckbox = document.getElementById('shoppables-disable-sources');
+                if (disableSourcesCheckbox) {
+                    disableSourcesCheckbox.checked = false;
+                }
+            }
+        }
+    },
+
+    /**
+     * Reset Shopify-specific options when switching modes
+     * @param {Object} elements - DOM elements
+     */
+    resetShopifyOptions(elements) {
+        this.options.sop = false;
+        this.options.sopRemoveSpacing = false;
+        this.options.sopRemoveDomain = false;
+        this.options.sopDisableSources = false;
+        if (elements.sopSubOptions) {
+            this.updateSopSubOptionsVisibility(elements.sopSubOptions);
+        }
+        const sopCheckbox = document.getElementById('sop');
+        if (sopCheckbox) {
+            sopCheckbox.checked = false;
+            sopCheckbox.disabled = false;
+        }
+    },
+
+    /**
+     * Reset Shoppables-specific options when switching modes
+     * @param {Object} elements - DOM elements
+     */
+    resetShoppablesOptions(elements) {
+        this.options.shoppablesSop = false;
+        this.options.shoppablesBrReadAlso = false;
+        this.options.shoppablesBrSources = false;
+        this.options.shoppablesDisableSources = false;
+        if (elements.shoppablesSopSubOptions) {
+            this.updateShoppablesSubOptionsVisibility(elements.shoppablesSopSubOptions);
+        }
+        const shoppablesSopCheckbox = document.getElementById('shoppables-sop');
+        if (shoppablesSopCheckbox) {
+            shoppablesSopCheckbox.checked = false;
+            shoppablesSopCheckbox.disabled = false;
         }
     },
 
