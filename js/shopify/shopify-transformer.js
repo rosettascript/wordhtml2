@@ -341,18 +341,25 @@ const ShopifyTransformer = {
                 }
             }
             
-            // Build new attributes in desired order: rel, href, then others
+            // Build new attributes in desired order: rel, target, href, then others
             const orderedAttrs = [];
             
             // 1. rel="noopener" (always first)
             orderedAttrs.push('rel="noopener"');
             
-            // 2. href (if exists)
+            // 2. target (preserve original if present, otherwise default to _blank)
+            let targetValue = '_blank';
+            if (attrMap['target'] && attrMap['target'].value) {
+                targetValue = attrMap['target'].value;
+            }
+            orderedAttrs.push(`target="${targetValue}"`);
+
+            // 3. href (if exists)
             if (attrMap['href']) {
                 orderedAttrs.push(`href="${attrMap['href'].value}"`);
             }
             
-            // 3. Other attributes (preserve existing order for non-standard attrs)
+            // 4. Other attributes (preserve existing order for non-standard attrs)
             Object.keys(attrMap).forEach(key => {
                 const lowerKey = key.toLowerCase();
                 if (lowerKey !== 'rel' && lowerKey !== 'target' && lowerKey !== 'href') {
