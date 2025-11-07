@@ -6,6 +6,7 @@
 const OutputRenderer = {
     outputElement: null,
     customCSS: '',
+    customCSSHasWrapper: false,
     previewMode: false,
     currentHTML: '',
     editMode: false,
@@ -619,7 +620,17 @@ const OutputRenderer = {
      * @param {string} css - CSS string
      */
     setCustomCSS(css) {
-        this.customCSS = css;
+        if (!css) {
+            this.customCSS = '';
+            this.customCSSHasWrapper = false;
+            return;
+        }
+
+        const trimmed = css.trim();
+        const hasWrapper = /^<style[\s>]/i.test(trimmed);
+
+        this.customCSS = trimmed;
+        this.customCSSHasWrapper = hasWrapper;
     },
 
     /**
@@ -642,7 +653,8 @@ const OutputRenderer = {
         
         // Apply custom CSS wrapper if needed
         if (this.customCSS) {
-            return `<style>${this.customCSS}</style>\n${formatted}`;
+            const cssBlock = this.customCSSHasWrapper ? this.customCSS : `<style>${this.customCSS}</style>`;
+            return `${cssBlock}\n${formatted}`;
         }
         
         return formatted;
@@ -687,7 +699,8 @@ const OutputRenderer = {
         const formatted = this.formatHTMLWithLineBreaks(html);
 
         if (this.customCSS) {
-            return `<style>${this.customCSS}</style>\n${formatted}`;
+            const cssBlock = this.customCSSHasWrapper ? this.customCSS : `<style>${this.customCSS}</style>`;
+            return `${cssBlock}\n${formatted}`;
         }
 
         return formatted;
