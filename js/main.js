@@ -464,12 +464,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // Copy button handler
     if (copyButton) {
         copyButton.addEventListener('click', () => {
-            const html = getOutputHTML();
-            if (html) {
-                navigator.clipboard.writeText(html).then(() => {
-                    // Visual feedback - show checkmark and toast
+            const isPreview = typeof OutputRenderer.isPreviewMode === 'function' && OutputRenderer.isPreviewMode();
+            let content = '';
+            let successMessage = 'HTML copied to clipboard!';
+
+            if (isPreview) {
+                content = (typeof OutputRenderer.getPreviewHTML === 'function' ? OutputRenderer.getPreviewHTML() : '') || '';
+                content = content.trim();
+
+                if (content) {
+                    successMessage = 'Preview HTML copied to clipboard!';
+                } else {
+                    content = getOutputHTML();
+                }
+            } else {
+                content = getOutputHTML();
+            }
+
+            if (content) {
+                navigator.clipboard.writeText(content).then(() => {
                     FeedbackHandler.showButtonSuccess(copyButton);
-                    FeedbackHandler.success('HTML copied to clipboard!');
+                    FeedbackHandler.success(successMessage);
                 }).catch(err => {
                     console.error('Failed to copy:', err);
                     FeedbackHandler.error('Failed to copy to clipboard');

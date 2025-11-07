@@ -568,24 +568,44 @@ const OutputRenderer = {
      * @returns {string} - Plain text content
      */
     getPlainText() {
-        // If in preview mode and edit mode, get text from the editable content
-        if (this.previewMode && this.editMode) {
+        if (this.previewMode && this.outputElement) {
             const contentDiv = this.outputElement.querySelector('.preview-content');
             if (contentDiv) {
-                return contentDiv.innerText || contentDiv.textContent || '';
+                const text = contentDiv.innerText || contentDiv.textContent || '';
+                return text.replace(/\u00a0/g, ' ');
             }
         }
-        
-        // Otherwise, extract text from HTML
+
         const htmlToConvert = (this.manuallyEdited && this.editedHTML) ? this.editedHTML : this.currentHTML;
         if (!htmlToConvert) return '';
-        
-        // Create a temporary div to parse HTML and extract text
+
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlToConvert;
-        
-        // Use innerText to preserve line breaks and formatting
-        return tempDiv.innerText || tempDiv.textContent || '';
+
+        const text = tempDiv.innerText || tempDiv.textContent || '';
+        return text.replace(/\u00a0/g, ' ');
+    },
+
+    /**
+     * Get rendered HTML when in preview mode
+     * @returns {string} - HTML string representing the preview content
+     */
+    getPreviewHTML() {
+        if (!this.previewMode || !this.outputElement) return '';
+
+        const contentDiv = this.outputElement.querySelector('.preview-content');
+        if (!contentDiv) return '';
+
+        const html = contentDiv.innerHTML.trim();
+        if (!html) return '';
+
+        const formatted = this.formatHTMLWithLineBreaks(html);
+
+        if (this.customCSS) {
+            return `<style>${this.customCSS}</style>\n${formatted}`;
+        }
+
+        return formatted;
     },
     
     /**

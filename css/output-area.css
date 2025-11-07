@@ -26,6 +26,8 @@
     position: relative;
     resize: none;
     box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
 }
 
 /* Hide empty state when output has content */
