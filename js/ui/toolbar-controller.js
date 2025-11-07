@@ -7,7 +7,8 @@ const ToolbarController = {
     mode: 'regular',
     options: {
         sop: false,
-        sopRemoveSpacing: false
+        sopRemoveSpacing: false,
+        sopRemoveDomain: false
     },
     onChangeCallback: null,
 
@@ -33,6 +34,7 @@ const ToolbarController = {
      * @param {HTMLElement} elements.shopifyOptions - Shopify options container
      * @param {HTMLElement} elements.sop - SOP radio button
      * @param {HTMLElement} elements.sopRemoveSpacing - SOP Remove Spacing radio button
+     * @param {HTMLElement} elements.sopRemoveDomain - SOP Remove Domain radio button
      * @param {HTMLElement} elements.sopSubOptions - SOP sub-options container
      * @param {Function} onChangeCallback - Callback when options change
      */
@@ -72,6 +74,7 @@ const ToolbarController = {
                     // If Regular is selected, uncheck and enable SOP
                     this.options.sop = false;
                     this.options.sopRemoveSpacing = false;
+                    this.options.sopRemoveDomain = false;
                     const sopCheckbox = document.getElementById('sop');
                     if (sopCheckbox) {
                         sopCheckbox.checked = false;
@@ -80,6 +83,10 @@ const ToolbarController = {
                     const sopRemoveSpacingCheckbox = document.getElementById('sop-remove-spacing');
                     if (sopRemoveSpacingCheckbox) {
                         sopRemoveSpacingCheckbox.checked = false;
+                    }
+                    const sopRemoveDomainCheckbox = document.getElementById('sop-remove-domain');
+                    if (sopRemoveDomainCheckbox) {
+                        sopRemoveDomainCheckbox.checked = false;
                     }
                     if (elements.sopSubOptions) {
                         this.updateSopSubOptionsVisibility(elements.sopSubOptions);
@@ -108,6 +115,14 @@ const ToolbarController = {
         if (elements.sopRemoveSpacing) {
             elements.sopRemoveSpacing.addEventListener('change', (e) => {
                 this.options.sopRemoveSpacing = e.target.checked;
+                this.notifyChange();
+            });
+        }
+
+        // SOP Remove Domain checkbox handler
+        if (elements.sopRemoveDomain) {
+            elements.sopRemoveDomain.addEventListener('change', (e) => {
+                this.options.sopRemoveDomain = e.target.checked;
                 this.notifyChange();
             });
         }
@@ -235,11 +250,16 @@ const ToolbarController = {
                 sopSubOptions.style.display = 'block';
             } else {
                 sopSubOptions.style.display = 'none';
-                // Uncheck sub-option when SOP is unchecked
+                // Uncheck sub-options when SOP is unchecked
                 this.options.sopRemoveSpacing = false;
+                this.options.sopRemoveDomain = false;
                 const sopRemoveSpacingCheckbox = document.getElementById('sop-remove-spacing');
                 if (sopRemoveSpacingCheckbox) {
                     sopRemoveSpacingCheckbox.checked = false;
+                }
+                const sopRemoveDomainCheckbox = document.getElementById('sop-remove-domain');
+                if (sopRemoveDomainCheckbox) {
+                    sopRemoveDomainCheckbox.checked = false;
                 }
             }
         }

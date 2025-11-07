@@ -10,6 +10,7 @@ const ShopifyTransformer = {
      * @param {Object} options - Transformation options
      * @param {boolean} options.sop - Apply SOP formatting (if true, use complex section detection)
      * @param {boolean} options.sopRemoveSpacing - Remove spacing when SOP is enabled
+     * @param {boolean} options.sopRemoveDomain - Remove domain from links when SOP is enabled
      * @returns {string} - Transformed HTML
      */
     transform(html, options = {}) {
@@ -39,8 +40,8 @@ const ShopifyTransformer = {
         // 4. Remove <h1> tags
         result = this.removeH1Tags(result);
 
-        // 5. Add rel="noopener" to all links
-        result = this.fixAllLinks(result);
+        // 5. Add rel="noopener" to all links and optionally remove domain
+        result = this.fixAllLinks(result, options);
 
         // 6. Add spacer after Key Takeaways list and before Read also
         result = this.addSpacersForKeyTakeawaysAndReadAlso(result);
@@ -118,7 +119,7 @@ const ShopifyTransformer = {
         result = this.convertSourcesListToParagraphs(result);
         result = this.fixKeyTakeawaysColon(result);
         result = this.removeH1Tags(result);
-        result = this.fixAllLinks(result);
+        result = this.fixAllLinks(result, options);
         result = this.addSpacersForKeyTakeawaysAndReadAlso(result);
         result = this.addSpacerBeforeHeaders(result);
         return result;
@@ -302,10 +303,13 @@ const ShopifyTransformer = {
     /**
      * Fix all links to add rel="noopener" and target="_blank"
      * Ensures rel="noopener" comes before href attribute
+     * Optionally removes domain from links (keeps only pathname and search/hash)
      * @param {string} html - HTML string
+     * @param {Object} options - Options object
+     * @param {boolean} options.sopRemoveDomain - If true, remove domain from links
      * @returns {string} - HTML with all links having rel="noopener" and target="_blank"
      */
-    fixAllLinks(html) {
+    fixAllLinks(html, options = {}) {
         // Use regex to replace anchor tags and ensure attribute order
         return html.replace(/<a\s+([^>]*)>/gi, (match, attrs) => {
             // Parse attributes
@@ -319,6 +323,21 @@ const ShopifyTransformer = {
                 const quote = attrMatch[2] || '';
                 const value = attrMatch[3] || attrMatch[4] || '';
                 attrMap[name.toLowerCase()] = { name, value, quote: quote || '"' };
+            }
+            
+            // Process href to remove domain if option is enabled
+            if (attrMap['href'] && options.sopRemoveDomain) {
+                const hrefValue = attrMap['href'].value;
+                try {
+                    // Try to parse as URL - if it has a protocol and host, extract just the path
+                    const url = new URL(hrefValue);
+                    // Get pathname + search + hash (everything after the domain)
+                    const relativePath = url.pathname + url.search + url.hash;
+                    attrMap['href'].value = relativePath;
+                } catch (e) {
+                    // If URL parsing fails, it might already be a relative URL or invalid
+                    // Keep it as is
+                }
             }
             
             // Build new attributes in desired order: rel, target, href, then others

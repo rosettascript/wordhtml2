@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const shopifyOptions = document.getElementById('shopify-options');
     const sop = document.getElementById('sop');
     const sopRemoveSpacing = document.getElementById('sop-remove-spacing');
+    const sopRemoveDomain = document.getElementById('sop-remove-domain');
     const sopSubOptions = document.getElementById('sop-sub-options');
     const customCSSInput = document.getElementById('custom-css');
     const inputEmptyState = document.getElementById('input-empty-state');
@@ -274,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
         shopifyOptions: shopifyOptions,
         sop: sop,
         sopRemoveSpacing: sopRemoveSpacing,
+        sopRemoveDomain: sopRemoveDomain,
         sopSubOptions: sopSubOptions
     }, () => {
         saveSettings();
