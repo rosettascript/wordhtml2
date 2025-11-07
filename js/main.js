@@ -336,6 +336,48 @@ document.addEventListener('DOMContentLoaded', () => {
         updateOutput();
     });
 
+    function isNodeEmpty(node) {
+        if (!node) return true;
+
+        if (node.nodeType === Node.TEXT_NODE) {
+            const text = (node.textContent || '')
+                .replace(/\u200B/g, '')
+                .replace(/\u00A0/g, ' ')
+                .trim();
+            return text.length === 0;
+        }
+
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            const tag = node.tagName.toLowerCase();
+
+            if (tag === 'br') {
+                return true;
+            }
+
+            if (tag === 'img' || tag === 'iframe' || tag === 'svg') {
+                return false;
+            }
+
+            const childNodes = node.childNodes;
+            if (!childNodes || childNodes.length === 0) {
+                const text = (node.textContent || '')
+                    .replace(/\u200B/g, '')
+                    .replace(/\u00A0/g, ' ')
+                    .trim();
+                return text.length === 0;
+            }
+
+            return Array.from(childNodes).every(isNodeEmpty);
+        }
+
+        return true;
+    }
+
+    function isInputEffectivelyEmpty(element) {
+        if (!element) return true;
+        return Array.from(element.childNodes || []).every(isNodeEmpty);
+    }
+
     // Update character/word count
     function updateInputCount() {
         if (!inputEditor || !inputCount) return;
@@ -630,7 +672,8 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function updateOutput() {
         // Get HTML in document order from contenteditable
-        const inputHTML = getOrderedContent(inputEditor);
+        const editorIsEmpty = isInputEffectivelyEmpty(inputEditor);
+        const inputHTML = editorIsEmpty ? '' : getOrderedContent(inputEditor);
         
         // Get custom CSS first (always get it, even if input is empty)
         const customCSS = CustomCSSHandler.getCSS(customCSSInput);

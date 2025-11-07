@@ -6,7 +6,10 @@
 const OutputRenderer = {
     outputElement: null,
     customCSS: '',
+    customCSSRaw: '',
     customCSSHasWrapper: false,
+    customCSSWrapperStart: '<style>',
+    customCSSWrapperEnd: '</style>',
     previewMode: false,
     currentHTML: '',
     editMode: false,
@@ -27,6 +30,10 @@ const OutputRenderer = {
         this.previewMode = false;
         this.currentHTML = '';
         this.customCSS = '';
+        this.customCSSRaw = '';
+        this.customCSSHasWrapper = false;
+        this.customCSSWrapperStart = '<style>';
+        this.customCSSWrapperEnd = '</style>';
         this.editMode = false;
         this.manuallyEdited = false;
         this.editedHTML = '';
@@ -81,7 +88,7 @@ const OutputRenderer = {
         const scrollPercentage = maxScrollTop > 0 ? scrollTop / maxScrollTop : 0;
 
         // Store HTML and CSS (even if empty)
-        this.customCSS = customCSS || '';
+        this.setCustomCSS(customCSS || '');
         this.currentHTML = html || '';
         
         // If this is from input change, reset manual edits
@@ -97,10 +104,12 @@ const OutputRenderer = {
         const htmlToRender = (this.manuallyEdited && this.editedHTML) ? this.editedHTML : this.currentHTML;
         
         // Render in preview mode or code mode
+        const cssForRender = this.customCSSRaw;
+
         if (this.previewMode) {
-            this.renderPreview(htmlToRender, this.customCSS);
+            this.renderPreview(htmlToRender, cssForRender);
         } else {
-            this.renderCode(htmlToRender, this.customCSS);
+            this.renderCode(htmlToRender, cssForRender);
         }
 
         // Restore scroll position after content renders
@@ -622,14 +631,35 @@ const OutputRenderer = {
     setCustomCSS(css) {
         if (!css) {
             this.customCSS = '';
+            this.customCSSRaw = '';
             this.customCSSHasWrapper = false;
+            this.customCSSWrapperStart = '<style>';
+            this.customCSSWrapperEnd = '</style>';
             return;
         }
 
         const trimmed = css.trim();
-        const hasWrapper = /^<style[\s>]/i.test(trimmed);
+        const startMatch = trimmed.match(/^<style[^>]*>/i);
+        const endMatch = trimmed.match(/<\/style>\s*$/i);
+        const hasWrapper = !!(startMatch && endMatch);
 
-        this.customCSS = trimmed;
+        if (hasWrapper) {
+            const start = startMatch[0];
+            const end = endMatch[0];
+            const inner = trimmed.substring(start.length, trimmed.length - end.length);
+            const sanitizedInner = inner.replace(/<\/?style[^>]*>/gi, '').trim();
+            this.customCSS = sanitizedInner;
+            this.customCSSWrapperStart = start;
+            this.customCSSWrapperEnd = end;
+            this.customCSSRaw = `${start}${sanitizedInner}${end}`;
+        } else {
+            const sanitizedInner = trimmed.replace(/<\/?style[^>]*>/gi, '').trim();
+            this.customCSS = sanitizedInner;
+            this.customCSSWrapperStart = '<style>';
+            this.customCSSWrapperEnd = '</style>';
+            this.customCSSRaw = `${this.customCSSWrapperStart}${this.customCSS}${this.customCSSWrapperEnd}`;
+        }
+
         this.customCSSHasWrapper = hasWrapper;
     },
 
@@ -653,7 +683,7 @@ const OutputRenderer = {
         
         // Apply custom CSS wrapper if needed
         if (this.customCSS) {
-            const cssBlock = this.customCSSHasWrapper ? this.customCSS : `<style>${this.customCSS}</style>`;
+            const cssBlock = `${this.customCSSWrapperStart}${this.customCSS}${this.customCSSWrapperEnd}`;
             return `${cssBlock}\n${formatted}`;
         }
         
@@ -699,7 +729,7 @@ const OutputRenderer = {
         const formatted = this.formatHTMLWithLineBreaks(html);
 
         if (this.customCSS) {
-            const cssBlock = this.customCSSHasWrapper ? this.customCSS : `<style>${this.customCSS}</style>`;
+            const cssBlock = `${this.customCSSWrapperStart}${this.customCSS}${this.customCSSWrapperEnd}`;
             return `${cssBlock}\n${formatted}`;
         }
 
