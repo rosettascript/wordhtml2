@@ -62,28 +62,15 @@ const PasteHandler = {
 
             // Minimal processing: ONLY remove images, preserve everything else exactly
             const cleanedHTML = this.processPasteMinimal(pastedData);
-            
+
             // Insert cleaned HTML at cursor position
             this.insertAtCursor(inputElement, cleanedHTML);
-            
-            // Ensure max-width on all elements to prevent overflow
-            const insertedElements = inputElement.querySelectorAll('*');
-            insertedElements.forEach(el => {
-                // Only add max-width if not already set, preserve everything else
-                const hasMaxWidth = el.style.maxWidth || 
-                    (el.hasAttribute('style') && /max-width\s*:/i.test(el.getAttribute('style')));
-                if (!hasMaxWidth) {
-                    if (el.hasAttribute('style')) {
-                        const currentStyle = el.getAttribute('style');
-                        el.setAttribute('style', currentStyle + (currentStyle.trim().endsWith(';') ? ' ' : '; ') + 'max-width: 100%');
-                    } else {
-                        el.setAttribute('style', 'max-width: 100%');
-                    }
-                }
-            });
-            
-            // Call callback with the full content
-            const fullHTML = this.getOrderedContentFromEditable(inputElement);
+
+            // Normalize editor content so lists and formatting stay visible in the input UI
+            const normalizedHTML = this.normalizeEditorContent(inputElement);
+
+            // Call callback with the normalized content (fallback to current editor content if needed)
+            const fullHTML = normalizedHTML || this.getOrderedContentFromEditable(inputElement);
             callback(fullHTML);
         });
 
@@ -93,6 +80,87 @@ const PasteHandler = {
             const html = this.getOrderedContentFromEditable(inputElement);
             callback(html);
         });
+    },
+
+    /**
+     * Normalize contenteditable markup so the source matches the cleaned output structure
+     * Converts Word list paragraphs into semantic lists and reapplies max-width guards
+     * @param {HTMLElement} element - Contenteditable element
+     * @returns {string} - Normalized HTML (formatted with line breaks)
+     */
+    normalizeEditorContent(element) {
+        if (!element) return '';
+
+        const originalHTML = this.getOrderedContentFromEditable(element);
+        if (!originalHTML) {
+            return '';
+        }
+
+        let cleanedHTML = originalHTML;
+
+        if (typeof HtmlConverter !== 'undefined' && HtmlConverter && typeof HtmlConverter.convert === 'function') {
+            try {
+                cleanedHTML = HtmlConverter.convert(originalHTML);
+            } catch (error) {
+                console.error('PasteHandler: failed to normalize pasted content', error);
+                cleanedHTML = originalHTML;
+            }
+        }
+
+        // Replace editor contents with normalized markup so UI mirrors rendered output
+        if (cleanedHTML && element.innerHTML !== cleanedHTML) {
+            element.innerHTML = cleanedHTML;
+        }
+
+        // Reapply max-width safeguards to every node
+        this.applyMaxWidthStyles(element);
+
+        // Move caret to the end of the inserted content
+        this.placeCursorAtEnd(element);
+
+        return cleanedHTML;
+    },
+
+    /**
+     * Ensure every element inside the editor respects the max-width guard
+     * @param {HTMLElement} element - Contenteditable element
+     */
+    applyMaxWidthStyles(element) {
+        if (!element) return;
+
+        const allNodes = element.querySelectorAll('*');
+        allNodes.forEach(node => {
+            const existingStyle = node.getAttribute('style');
+            const hasMaxWidth = (node.style && node.style.maxWidth) || (existingStyle && /max-width\s*:/i.test(existingStyle));
+
+            if (hasMaxWidth) {
+                return;
+            }
+
+            if (existingStyle && existingStyle.trim() !== '') {
+                const needsSemicolon = existingStyle.trim().endsWith(';');
+                node.setAttribute('style', `${existingStyle}${needsSemicolon ? ' ' : '; '}max-width: 100%`);
+            } else {
+                node.setAttribute('style', 'max-width: 100%');
+            }
+        });
+    },
+
+    /**
+     * Place caret at the end of the contenteditable element
+     * @param {HTMLElement} element - Contenteditable element
+     */
+    placeCursorAtEnd(element) {
+        if (!element) return;
+        const selection = window.getSelection();
+        if (!selection) return;
+
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        range.collapse(false);
+
+        selection.removeAllRanges();
+        selection.addRange(range);
     },
 
     /**
@@ -581,10 +649,11 @@ const PasteHandler = {
             setStyleIfNotSet(list, 'padding-left', '2em');
             setStyleIfNotSet(list, 'margin', '0.5em 0');
             if (list.tagName === 'UL') {
-                setStyleIfNotSet(list, 'list-style-type', 'disc');
+                list.style.setProperty('list-style-type', 'disc', 'important');
             } else if (list.tagName === 'OL') {
-                setStyleIfNotSet(list, 'list-style-type', 'decimal');
+                list.style.setProperty('list-style-type', 'decimal', 'important');
             }
+            list.style.setProperty('list-style-position', 'outside', 'important');
         });
         
         // Style list items (only if not already set)
@@ -592,6 +661,13 @@ const PasteHandler = {
         listItems.forEach(li => {
             li.style.setProperty('display', 'list-item', 'important');
             li.style.setProperty('width', '100%', 'important');
+            li.style.setProperty('list-style-position', 'outside', 'important');
+            const parentList = li.parentElement;
+            if (parentList && parentList.tagName === 'UL') {
+                li.style.setProperty('list-style-type', 'disc', 'important');
+            } else if (parentList && parentList.tagName === 'OL') {
+                li.style.setProperty('list-style-type', 'decimal', 'important');
+            }
             setStyleIfNotSet(li, 'margin', '0.25em 0');
         });
     },

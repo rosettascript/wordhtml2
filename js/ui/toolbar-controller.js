@@ -219,24 +219,24 @@ const ToolbarController = {
                 formatInfoList.appendChild(li);
             });
             
+            // Add collapsed class FIRST, before showing
+            formatInfo.classList.add('collapsed');
+            const toggle = formatInfo.querySelector('.format-info-toggle');
+            if (toggle) {
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+            
             // Show format info with animation
             formatInfo.style.display = 'block';
             // Use setTimeout to trigger animation
             setTimeout(() => {
                 formatInfo.classList.add('show');
-                // Reset collapsed state when showing
-                formatInfo.classList.remove('collapsed');
-                const toggle = formatInfo.querySelector('.format-info-toggle');
-                if (toggle) {
-                    toggle.setAttribute('aria-expanded', 'true');
-                }
             }, 10);
         } else {
-            // Hide format info with animation
+            // Hide format info immediately without animation
             formatInfo.classList.remove('show');
-            setTimeout(() => {
-                formatInfo.style.display = 'none';
-            }, 300);
+            formatInfo.classList.remove('collapsed');
+            formatInfo.style.display = 'none';
         }
     },
 

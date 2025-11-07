@@ -1,201 +1,48 @@
-/* Output Area CSS */
+/* Output Panel CSS */
 
-.output-area {
-    background-color: var(--bg-surface);
-    padding: var(--spacing-2xl);
-    margin: 0;
-    width: 50%;
+/* ========================================
+   OUTPUT PANEL SPECIFIC STYLES
+   ======================================== */
+
+.panel-output {
     flex: 1;
-    box-sizing: border-box;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.output-wrapper {
-    position: relative;
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.output-area-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-lg);
-}
-
-.output-area h2 {
-    font-size: 1.5em;
-    color: var(--color-text);
-    margin: 0;
-    font-weight: var(--font-weight-semibold);
-}
-
-.output-controls {
-    margin: 0;
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--spacing-md);
-}
-
-.copy-button,
-.download-button,
-.preview-toggle-button {
-    padding: var(--spacing-md);
-    border: var(--border-width) solid var(--border-color);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    box-shadow: none;
-    background-color: var(--bg-surface);
-    color: var(--color-text);
-    position: relative;
-    overflow: hidden;
-}
-
-.download-button:hover {
-    background-color: var(--bg-surface-alt);
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-}
-
-.download-button:active {
-    transform: scale(0.98);
-}
-
-.download-button:focus-visible {
-    outline: none;
-    border-color: var(--focus-color);
-    box-shadow: 0 0 0 2px var(--focus-color);
-    box-shadow-opacity: var(--focus-opacity);
-}
-
-.copy-button {
-    background-color: var(--color-accent);
-    color: var(--bg-surface);
-    border-color: var(--color-accent);
-}
-
-.copy-button:hover {
-    background-color: var(--color-accent-alt);
-    border-color: var(--color-accent-alt);
-}
-
-.copy-button:active {
-    transform: scale(0.98);
-}
-
-.copy-button.button-success {
-    background-color: var(--color-accent);
-    animation: buttonPulse 0.3s ease;
-}
-
-.preview-toggle-button:hover {
-    background-color: var(--bg-surface-alt);
-    border-color: var(--color-accent);
-}
-
-.preview-toggle-button.active {
-    background-color: var(--color-accent);
-    color: var(--bg-surface);
-    border-color: var(--color-accent);
-}
-
-.preview-toggle-button.active:hover {
-    background-color: var(--color-accent-alt);
-    border-color: var(--color-accent-alt);
-}
-
-.preview-toggle-button:focus-visible {
-    outline: none;
-    border-color: var(--focus-color);
-    box-shadow: 0 0 0 2px var(--focus-color);
-    box-shadow-opacity: var(--focus-opacity);
-}
-
-/* Icon styling */
-.icon {
-    width: 20px;
-    height: 20px;
-    stroke: currentColor;
-    fill: none;
-}
-
-/* Preview toggle icon visibility */
-.preview-toggle-button .preview-icon {
-    display: block;
-}
-
-.preview-toggle-button .code-icon {
-    display: none;
-}
-
-.preview-toggle-button.active .preview-icon {
-    display: none;
-}
-
-.preview-toggle-button.active .code-icon {
-    display: block;
-}
-
-.output-display {
-    flex: 1;
-    min-height: 0;
-    max-width: 100%;
     width: 100%;
-    padding: var(--spacing-lg);
-    border: var(--border-width) solid var(--border-color);
-    border-radius: var(--radius-md);
-    background-color: var(--bg-surface);
-    color: var(--color-text);
-    overflow-y: auto;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 0;
+    max-height: 100%;
+    padding: var(--spacing-4);
+    border: var(--border-width) solid rgba(168, 181, 178, 0.2);
+    border-radius: var(--radius);
+    background-color: var(--card);
+    color: var(--foreground);
+    overflow-y: auto !important;
     overflow-x: auto;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 400;
     white-space: pre-wrap;
     word-wrap: break-word;
     position: relative;
-    z-index: 1;
+    resize: none;
+    box-sizing: border-box;
 }
 
-.output-empty-state {
-    background-color: var(--bg-surface-alt);
-    border: var(--border-width) dashed var(--border-color);
-    border-radius: var(--radius-md);
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 3;
-    display: flex;
-    opacity: 1;
-}
-
-.output-empty-state.hidden {
+/* Hide empty state when output has content */
+.panel-output:not(:empty) ~ .panel-empty-state {
+    opacity: 0;
     display: none;
 }
 
-.output-display:has(pre[class*="language-"]) {
+.panel-output:has(pre[class*="language-"]) {
     padding: 0;
 }
 
-.output-display:not(.preview-mode):has(pre[class*="language-"]) {
+.panel-output:not(.preview-mode):has(pre[class*="language-"]) {
     padding: 0;
 }
 
-.output-display pre {
+.panel-output pre {
     margin: 0;
     padding: 0;
     white-space: pre;
@@ -203,41 +50,48 @@
     background-color: transparent;
 }
 
-.output-display code {
+.panel-output code {
     display: block;
     white-space: pre;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.875rem;
     line-height: 1.5;
 }
 
-/* Prism.js syntax highlighting styles */
-.output-display pre[class*="language-"] {
+/* ========================================
+   PRISM.JS SYNTAX HIGHLIGHTING
+   ======================================== */
+
+.panel-output pre[class*="language-"] {
     margin: 0;
-    padding: var(--spacing-lg);
-    background: var(--bg-surface);
-    border-radius: var(--radius-md);
+    padding: var(--spacing-4);
+    background: var(--card);
+    border-radius: 0;
     overflow-x: auto;
 }
 
-.output-display code[class*="language-"] {
+.panel-output code[class*="language-"] {
     background: transparent;
     padding: 0;
-    color: var(--color-text);
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
+    color: var(--foreground);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.875rem;
     line-height: 1.6;
+    font-weight: 400;
 }
 
-/* When output contains HTML preview */
-.output-display.preview-mode {
-    background-color: var(--bg-surface);
+/* ========================================
+   PREVIEW MODE
+   ======================================== */
+
+.panel-output.preview-mode {
+    background-color: var(--background);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     white-space: normal;
-    padding: var(--spacing-lg);
+    padding: var(--spacing-4);
 }
 
-.output-display.preview-mode * {
+.panel-output.preview-mode * {
     max-width: 100%;
 }
 
@@ -247,7 +101,7 @@
     overflow: visible;
 }
 
-/* Preserve whitespace in paragraphs and text elements */
+/* Preserve whitespace in paragraphs */
 .preview-container p {
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -256,13 +110,12 @@
     display: block;
 }
 
-/* Ensure empty paragraphs still take up space */
 .preview-container p:empty {
     min-height: 1em;
     display: block;
 }
 
-/* Preserve spacing in other elements */
+/* Headings in preview */
 .preview-container h1,
 .preview-container h2,
 .preview-container h3,
@@ -286,7 +139,7 @@
     overflow-x: auto;
 }
 
-/* Style lists properly */
+/* Lists in preview */
 .preview-container ul,
 .preview-container ol {
     margin: 0.5em 0;
@@ -322,65 +175,163 @@
     height: auto;
 }
 
-/* Responsive adjustments for output area */
+/* ========================================
+   BUTTON SUCCESS STATE
+   ======================================== */
 
-/* Desktop: side-by-side 50/50 split */
-@media (min-width: 1025px) {
-    .output-area {
-        width: 50%;
-        border-left: var(--border-width) solid var(--border-color);
+.panel-button.button-success {
+    background-color: var(--accent) !important;
+    animation: buttonPulse 0.3s ease;
+}
+
+@keyframes buttonPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
     }
 }
 
-/* Tablet: full width when stacked */
-@media (max-width: 1024px) and (min-width: 768px) {
-    .output-area {
-        width: 100%;
-        height: 50%;
-        min-height: 300px;
-        border-top: var(--border-width) solid var(--border-color);
-        border-left: none;
-    }
-    
-    /* When sidebar collapsed and side-by-side */
-    .toolbar-area.collapsed ~ .main-content .content-area > .output-area {
-        width: 50%;
-        height: 100%;
-        border-left: var(--border-width) solid var(--border-color);
-        border-top: none;
-    }
+/* ========================================
+   DARK MODE OPTIMIZATIONS
+   ======================================== */
+
+/* Fix blurry text in dark mode */
+[data-theme="dark"] .panel-output,
+[data-theme="dark"] .panel-output code,
+[data-theme="dark"] .panel-output pre {
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+    text-rendering: optimizeLegibility;
+    font-weight: 400;
 }
 
-/* Mobile: full width stacked */
-@media (max-width: 767px) {
-    .output-area {
-        width: 100%;
-        height: 50%;
-        min-height: 250px;
-        padding: var(--spacing-lg);
-        border-top: var(--border-width) solid var(--border-color);
-        border-left: none;
-    }
+/* Ensure crisp text in preview mode */
+[data-theme="dark"] .panel-output.preview-mode {
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
 }
 
-/* Extra small mobile */
-@media (max-width: 480px) {
-    .output-area {
-        padding: var(--spacing-md);
-    }
-    
-    .output-area-header {
-        flex-wrap: wrap;
-        gap: var(--spacing-sm);
-    }
-    
-    .output-area h2 {
-        font-size: 1.25em;
-    }
-    
-    .output-controls {
-        gap: var(--spacing-sm);
-    }
+/* Ensure crisp text for all child elements */
+[data-theme="dark"] .panel-output.preview-mode * {
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
 }
 
+/* ========================================
+   PRISM.JS DARK MODE SYNTAX HIGHLIGHTING
+   ======================================== */
 
+/* Override Prism.js colors for better dark mode visibility and crispness */
+[data-theme="dark"] .panel-output code[class*="language-"],
+[data-theme="dark"] .panel-output pre[class*="language-"] {
+    color: #E8E5E0;
+    text-shadow: none;
+    background: transparent;
+}
+
+/* HTML/XML Tags */
+[data-theme="dark"] .token.tag {
+    color: #7EE787;
+}
+
+[data-theme="dark"] .token.tag .token.punctuation {
+    color: #7EE787;
+}
+
+/* Attribute Names */
+[data-theme="dark"] .token.attr-name {
+    color: #79C0FF;
+}
+
+/* Attribute Values */
+[data-theme="dark"] .token.attr-value,
+[data-theme="dark"] .token.string {
+    color: #A5D6FF;
+}
+
+/* Comments */
+[data-theme="dark"] .token.comment,
+[data-theme="dark"] .token.prolog,
+[data-theme="dark"] .token.doctype,
+[data-theme="dark"] .token.cdata {
+    color: #8B949E;
+    font-style: italic;
+}
+
+/* Punctuation */
+[data-theme="dark"] .token.punctuation {
+    color: #C9D1D9;
+}
+
+/* CSS Selectors, Classes */
+[data-theme="dark"] .token.selector,
+[data-theme="dark"] .token.class-name {
+    color: #FFA657;
+}
+
+/* CSS Properties */
+[data-theme="dark"] .token.property {
+    color: #79C0FF;
+}
+
+/* Numbers, Booleans */
+[data-theme="dark"] .token.number,
+[data-theme="dark"] .token.boolean {
+    color: #79C0FF;
+}
+
+/* Functions */
+[data-theme="dark"] .token.function {
+    color: #D2A8FF;
+}
+
+/* Keywords */
+[data-theme="dark"] .token.keyword {
+    color: #FF7B72;
+}
+
+/* Operators */
+[data-theme="dark"] .token.operator {
+    color: #FF7B72;
+}
+
+/* URLs */
+[data-theme="dark"] .token.url {
+    color: #A5D6FF;
+}
+
+/* Important, Bold */
+[data-theme="dark"] .token.important,
+[data-theme="dark"] .token.bold {
+    font-weight: bold;
+}
+
+/* Italic */
+[data-theme="dark"] .token.italic {
+    font-style: italic;
+}
+
+/* Entity */
+[data-theme="dark"] .token.entity {
+    cursor: help;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .panel-output {
+        padding: var(--spacing-3);
+        font-size: 0.75rem;
+    }
+    
+    .panel-output.preview-mode {
+        padding: var(--spacing-3);
+    }
+}

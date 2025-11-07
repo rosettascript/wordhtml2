@@ -1,313 +1,185 @@
-/* Input Area CSS */
+/* Input/Output Panel CSS */
 
-.input-area {
-    background-color: var(--bg-surface);
-    padding: var(--spacing-2xl);
-    margin: 0;
-    width: 50%;
-    flex: 1;
-    box-sizing: border-box;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
+/* ========================================
+   CONVERSION PANELS CONTAINER
+   ======================================== */
 
-.input-wrapper {
-    position: relative;
-    flex: 1;
+.conversion-panels {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-6);
     min-height: 0;
-    display: flex;
-    flex-direction: column;
+    height: 600px;
 }
 
-.input-area-header {
+@media (max-width: 1024px) {
+    .conversion-panels {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: 600px;
+    }
+    
+    .panel {
+        height: 600px;
+    }
+}
+
+/* ========================================
+   PANEL BASE STYLES
+   ======================================== */
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-lg);
-    gap: var(--spacing-md);
 }
 
-.input-area-title-group {
+.panel-title-group {
     display: flex;
-    flex-direction: row;
-    align-items: baseline;
-    gap: var(--spacing-md);
+    align-items: center;
+    gap: var(--spacing-2);
     flex: 1;
 }
 
-.input-area h2 {
-    font-size: 1.5em;
-    color: var(--color-text);
+.panel-icon {
+    width: 16px;
+    height: 16px;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    flex-shrink: 0;
+}
+
+.panel-title-group h4 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--foreground);
     margin: 0;
-    font-weight: var(--font-weight-semibold);
-    display: flex;
-    align-items: baseline;
-    gap: var(--spacing-md);
 }
 
-.input-count {
-    font-size: 0.65em;
-    color: var(--color-text-secondary);
-    font-weight: var(--font-weight-regular);
-    margin-left: var(--spacing-xs);
+.word-count {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    font-weight: 400;
 }
 
-.input-count.hidden {
+.word-count.hidden {
     display: none;
 }
 
-.clear-input-button {
-    padding: var(--spacing-md);
-    border: var(--border-width) solid var(--border-color);
-    border-radius: var(--radius-md);
+.panel-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+/* ========================================
+   PANEL BUTTONS
+   ======================================== */
+
+.panel-button {
+    padding: var(--spacing-1);
+    border: none;
+    background: transparent;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    box-shadow: none;
-    background-color: var(--bg-surface);
-    color: var(--color-text);
-    position: relative;
-    overflow: hidden;
+    width: 28px;
+    height: 28px;
+    color: var(--muted-foreground);
+    border-radius: var(--radius);
 }
 
-.clear-input-button:hover {
-    background-color: var(--bg-surface-alt);
-    border-color: var(--color-accent);
-    color: var(--color-accent);
+.panel-button:hover {
+    background-color: var(--muted);
+    color: var(--foreground);
 }
 
-.clear-input-button:active {
+.panel-button:active {
     transform: scale(0.98);
 }
 
-.clear-input-button:focus-visible {
+.panel-button:focus-visible {
     outline: none;
     border-color: var(--focus-color);
-    box-shadow: 0 0 0 2px var(--focus-color);
-    box-shadow-opacity: var(--focus-opacity);
+    box-shadow: 0 0 0 2px rgba(168, 181, 178, 0.1);
 }
 
-.clear-input-button .icon {
-    width: 20px;
-    height: 20px;
+.panel-button .icon {
+    width: 16px;
+    height: 16px;
 }
 
-.input-hint {
-    color: var(--color-text-secondary);
-    font-size: 0.9em;
-    margin-bottom: var(--spacing-lg);
+.panel-button-primary {
+    background-color: transparent;
+    color: var(--muted-foreground);
 }
 
-.input-editor {
+.panel-button-primary:hover {
+    background-color: var(--muted);
+    color: var(--foreground);
+}
+
+.panel-button.active {
+    background-color: var(--muted);
+    color: var(--foreground);
+}
+
+.panel-button.active:hover {
+    background-color: var(--accent);
+    color: var(--background);
+}
+
+/* Preview toggle icon visibility */
+.panel-button .preview-icon {
+    display: block;
+}
+
+.panel-button .code-icon {
+    display: none;
+}
+
+.panel-button.active .preview-icon {
+    display: none;
+}
+
+.panel-button.active .code-icon {
+    display: block;
+}
+
+/* ========================================
+   PANEL CONTENT
+   ======================================== */
+
+.panel-content {
+    position: relative;
     flex: 1;
     min-height: 0;
+    min-width: 0;
     max-width: 100%;
-    width: 100%;
-    padding: var(--spacing-lg);
-    border: var(--border-width) solid var(--border-color);
-    border-radius: var(--radius-md);
-    background-color: var(--bg-surface);
-    color: var(--color-text);
-    font-size: 1em;
-    line-height: 1.6;
-    overflow-y: auto;
-    overflow-x: hidden;
-    transition: border-color 0.3s ease, background-color 0.3s ease;
-    word-wrap: break-word;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    display: flex;
+    flex-direction: column;
 }
 
-.input-editor:hover {
-    border-color: var(--color-accent);
-    background-color: var(--bg-surface-alt);
-}
-
-.input-editor:focus {
-    outline: none;
-    border-color: var(--focus-color);
-    box-shadow: 0 0 0 2px var(--focus-color);
-    box-shadow-opacity: var(--focus-opacity);
-}
-
-.input-editor:empty:before {
-    content: attr(placeholder);
-    color: var(--color-text-muted);
-    font-style: italic;
-}
-
-.input-editor[contenteditable="true"] {
-    cursor: text;
-    white-space: pre-wrap !important; /* Preserve line breaks and wrap text */
-    word-wrap: break-word !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    /* Force browser to treat as rich text, not plain text */
-    -webkit-user-modify: read-write;
-    user-modify: read-write;
-}
-
-/* Preserve whitespace for child elements but allow wrapping */
-.input-editor * {
-    white-space: pre-wrap !important; /* Preserve line breaks while allowing wrapping */
-    word-wrap: break-word !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    max-width: 100%; /* Prevent elements from exceeding container width */
-    box-sizing: border-box; /* Include padding/border in width calculation */
-    color: inherit; /* Inherit text color from parent for proper dark mode support */
-}
-
-/* Force text color in dark mode, overriding inline styles from Word */
-[data-theme="dark"] .input-editor,
-[data-theme="dark"] .input-editor * {
-    color: var(--color-text) !important;
-}
-
-/* Ensure specific elements have proper color in dark mode */
-[data-theme="dark"] .input-editor p,
-[data-theme="dark"] .input-editor span,
-[data-theme="dark"] .input-editor div,
-[data-theme="dark"] .input-editor h1,
-[data-theme="dark"] .input-editor h2,
-[data-theme="dark"] .input-editor h3,
-[data-theme="dark"] .input-editor h4,
-[data-theme="dark"] .input-editor h5,
-[data-theme="dark"] .input-editor h6,
-[data-theme="dark"] .input-editor li,
-[data-theme="dark"] .input-editor td,
-[data-theme="dark"] .input-editor th {
-    color: var(--color-text) !important;
-}
-
-/* Preserve Word formatting styles - only apply if not already set via inline styles */
-.input-editor h1,
-.input-editor h2,
-.input-editor h3,
-.input-editor h4,
-.input-editor h5,
-.input-editor h6 {
-    display: block !important; /* Force block display */
-    margin: 1em 0 0.5em 0 !important;
-    font-weight: bold !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    color: var(--color-text) !important; /* Ensure headings use proper text color for dark mode */
-}
-
-/* Remove top margin from first heading if it's the first element */
-.input-editor > h1:first-child,
-.input-editor > h2:first-child,
-.input-editor > h3:first-child,
-.input-editor > h4:first-child,
-.input-editor > h5:first-child,
-.input-editor > h6:first-child {
-    margin-top: 0 !important;
-}
-
-.input-editor h1 { 
-    font-size: 2em; 
-    line-height: 1.2;
-}
-.input-editor h2 { 
-    font-size: 1.5em; 
-    line-height: 1.3;
-}
-.input-editor h3 { 
-    font-size: 1.3em; 
-    line-height: 1.4;
-}
-.input-editor h4 { 
-    font-size: 1.1em; 
-}
-.input-editor h5 { 
-    font-size: 1em; 
-}
-.input-editor h6 { 
-    font-size: 0.9em; 
-}
-
-.input-editor p {
-    display: block !important; /* Force block display */
-    margin: 0.5em 0 !important;
-    min-height: 1em; /* Prevent collapsing empty paragraphs */
-    width: 100% !important;
-    box-sizing: border-box !important;
-    color: var(--color-text) !important; /* Ensure paragraphs use proper text color for dark mode */
-}
-
-/* Remove top margin from first element to eliminate gap at top */
-.input-editor > *:first-child {
-    margin-top: 0 !important;
-}
-
-/* Ensure empty paragraphs maintain spacing */
-.input-editor p:empty::before {
-    content: '\200B'; /* Zero-width space to prevent collapsing */
-}
-
-.input-editor ul,
-.input-editor ol {
-    display: block !important; /* Force block display */
-    margin: 0.5em 0 !important;
-    padding-left: 2em !important;
-    list-style-type: disc !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-}
-
-/* Remove top margin from first list if it's the first element */
-.input-editor > ul:first-child,
-.input-editor > ol:first-child {
-    margin-top: 0 !important;
-}
-
-.input-editor ol {
-    list-style-type: decimal;
-}
-
-.input-editor li {
-    display: list-item !important; /* Force list-item display */
-    margin: 0.25em 0 !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    color: var(--color-text) !important; /* Ensure list items use proper text color for dark mode */
-}
-
-.input-editor strong {
-    font-weight: bold;
-}
-
-.input-editor em {
-    font-style: italic;
-}
-
-.input-editor sup {
-    vertical-align: super;
-    font-size: 0.8em;
-}
-
-.input-editor sub {
-    vertical-align: sub;
-    font-size: 0.8em;
-}
-
-/* Empty State Styles */
-.empty-state {
+.panel-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-4xl) var(--spacing-2xl);
+    padding: var(--spacing-16) var(--spacing-8);
     text-align: center;
-    color: var(--color-text-secondary);
+    color: var(--muted-foreground);
     position: absolute;
     top: 0;
     left: 0;
@@ -317,110 +189,253 @@
     pointer-events: none;
     opacity: 1;
     transition: opacity 0.3s ease;
+    border: var(--border-width) solid rgba(168, 181, 178, 0.2);
+    border-radius: var(--radius);
+    background-color: var(--card);
 }
 
-.empty-state.hidden {
+.panel-empty-state.hidden {
     opacity: 0;
-    pointer-events: none;
     display: none;
 }
 
-.empty-state-icon {
-    width: 64px;
-    height: 64px;
-    margin-bottom: var(--spacing-lg);
-    color: var(--color-text-muted);
+.empty-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: var(--spacing-4);
+    color: rgba(51, 51, 51, 0.2);
     stroke: currentColor;
     fill: none;
 }
 
-.empty-state-title {
-    font-size: 1.25em;
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin: 0 0 var(--spacing-sm) 0;
+[data-theme="dark"] .empty-icon {
+    color: rgba(232, 229, 224, 0.2);
 }
 
-.empty-state-description {
-    font-size: 0.95em;
-    color: var(--color-text-secondary);
-    margin: 0 0 var(--spacing-lg) 0;
-    max-width: 400px;
+.empty-text {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    margin: 0;
+}
+
+.empty-subtext {
+    font-size: 0.625rem;
+    color: var(--muted-foreground);
+    margin: var(--spacing-2) 0 0 0;
+    max-width: 200px;
+}
+
+/* ========================================
+   SOURCE PANEL - EDITOR
+   ======================================== */
+
+.panel-editor {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 0;
+    max-height: 100%;
+    padding: var(--spacing-4);
+    border: var(--border-width) solid rgba(168, 181, 178, 0.2);
+    border-radius: var(--radius);
+    background-color: var(--card);
+    color: var(--foreground);
+    font-size: 0.875rem;
     line-height: 1.6;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    transition: border-color 0.3s ease;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    cursor: text;
+    white-space: pre-wrap !important;
+    resize: none;
+    box-sizing: border-box;
 }
 
-.empty-state-tip {
-    font-size: 0.85em;
-    color: var(--color-text-secondary);
-    padding: var(--spacing-sm) var(--spacing-md);
-    background-color: var(--bg-surface-alt);
-    border-radius: var(--radius-md);
-    margin-top: var(--spacing-sm);
+.panel-editor:hover {
+    border-color: rgba(168, 181, 178, 0.4);
 }
 
-.empty-state-tip strong {
-    color: var(--color-text);
-    font-weight: var(--font-weight-semibold);
+.panel-editor:focus {
+    outline: none;
+    border-color: rgba(168, 181, 178, 0.4);
 }
 
-.input-empty-state {
-    background-color: var(--bg-surface-alt);
-    border: var(--border-width) dashed var(--border-color);
-    border-radius: var(--radius-md);
+.panel-editor:empty:before {
+    content: attr(placeholder);
+    color: var(--muted-foreground);
+    font-style: italic;
 }
 
-.input-editor:not(:empty) ~ .input-empty-state,
-.input-editor:focus ~ .input-empty-state {
+/* Preserve Word formatting styles */
+.panel-editor * {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    color: inherit;
+    overflow-x: hidden !important;
+}
+
+/* Force text color in dark mode and fix blurriness */
+[data-theme="dark"] .panel-editor,
+[data-theme="dark"] .panel-editor * {
+    color: var(--foreground) !important;
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+}
+
+.panel-editor h1,
+.panel-editor h2,
+.panel-editor h3,
+.panel-editor h4,
+.panel-editor h5,
+.panel-editor h6 {
+    display: block !important;
+    margin: 1em 0 0.5em 0 !important;
+    font-weight: bold !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    color: var(--foreground) !important;
+}
+
+.panel-editor > h1:first-child,
+.panel-editor > h2:first-child,
+.panel-editor > h3:first-child,
+.panel-editor > h4:first-child,
+.panel-editor > h5:first-child,
+.panel-editor > h6:first-child {
+    margin-top: 0 !important;
+}
+
+.panel-editor h1 { font-size: 2em; line-height: 1.2; }
+.panel-editor h2 { font-size: 1.5em; line-height: 1.3; }
+.panel-editor h3 { font-size: 1.3em; line-height: 1.4; }
+.panel-editor h4 { font-size: 1.1em; }
+.panel-editor h5 { font-size: 1em; }
+.panel-editor h6 { font-size: 0.9em; }
+
+.panel-editor p {
+    display: block !important;
+    margin: 0.5em 0 !important;
+    min-height: 1em;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    color: var(--foreground) !important;
+}
+
+.panel-editor > *:first-child {
+    margin-top: 0 !important;
+}
+
+.panel-editor p:empty::before {
+    content: '\200B';
+}
+
+.panel-editor ul,
+.panel-editor ol {
+    display: block !important;
+    margin: 0.5em 0 !important;
+    padding-left: 1.75rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    list-style: none !important;
+    position: relative;
+}
+
+.panel-editor ul {
+    list-style-type: none !important;
+}
+
+.panel-editor > ul:first-child,
+.panel-editor > ol:first-child {
+    margin-top: 0 !important;
+}
+
+.panel-editor ol {
+    list-style-type: none !important;
+    counter-reset: panel-editor-ol;
+}
+
+.panel-editor li {
+    position: relative !important;
+}
+
+.panel-editor ul li::before {
+    content: '•';
+    position: absolute;
+    left: -1.25rem;
+    color: var(--foreground);
+    font-weight: 600;
+}
+
+.panel-editor ol li {
+    counter-increment: panel-editor-ol;
+}
+
+.panel-editor ol li::before {
+    content: counter(panel-editor-ol) '.';
+    position: absolute;
+    left: -1.75rem;
+    color: var(--foreground);
+    font-weight: 600;
+}
+
+.panel-editor li {
+    display: list-item !important;
+    margin: 0.25em 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    color: var(--foreground) !important;
+}
+
+.panel-editor strong { font-weight: bold; }
+.panel-editor em { font-style: italic; }
+.panel-editor sup { vertical-align: super; font-size: 0.8em; }
+.panel-editor sub { vertical-align: sub; font-size: 0.8em; }
+
+/* Hide empty state when editor has content or is focused */
+.panel-editor:not(:empty) ~ .panel-empty-state,
+.panel-editor:focus ~ .panel-empty-state {
     opacity: 0;
     pointer-events: none;
 }
 
-/* Responsive adjustments for input area */
+/* ========================================
+   RESPONSIVE
+   ======================================== */
 
-/* Desktop: side-by-side 50/50 split */
-@media (min-width: 1025px) {
-    .input-area {
-        width: 50%;
-    }
-}
-
-/* Tablet: full width when stacked */
-@media (max-width: 1024px) and (min-width: 768px) {
-    .input-area {
-        width: 100%;
-        height: 50%;
-        min-height: 300px;
+@media (max-width: 768px) {
+    .conversion-panels {
+        height: auto;
+        min-height: 500px;
     }
     
-    /* When sidebar collapsed and side-by-side */
-    .toolbar-area.collapsed ~ .main-content .content-area > .input-area {
-        width: 50%;
-        height: 100%;
-    }
-}
-
-/* Mobile: full width stacked */
-@media (max-width: 767px) {
-    .input-area {
-        width: 100%;
-        height: 50%;
-        min-height: 250px;
-        padding: var(--spacing-lg);
-    }
-}
-
-/* Extra small mobile */
-@media (max-width: 480px) {
-    .input-area {
-        padding: var(--spacing-md);
+    .panel {
+        height: 450px;
     }
     
-    .input-area-header {
-        flex-wrap: wrap;
+    .panel-header {
+        padding: var(--spacing-3);
     }
     
-    .input-area h2 {
-        font-size: 1.25em;
+    .panel-editor {
+        padding: var(--spacing-3);
+        font-size: 0.8125rem;
+    }
+    
+    .panel-button {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .panel-button .icon {
+        width: 14px;
+        height: 14px;
     }
 }
-

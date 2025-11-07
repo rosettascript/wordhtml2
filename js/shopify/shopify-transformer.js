@@ -427,7 +427,7 @@ const ShopifyTransformer = {
                 if (i === faqIndex) {
                     // Add spacer before FAQ header
                     const spacer = document.createElement('p');
-                    spacer.innerHTML = '';
+                    spacer.innerHTML = '&nbsp;';
                     header.parentNode.insertBefore(spacer, header);
                     continue;
                 }
@@ -440,7 +440,7 @@ const ShopifyTransformer = {
                 // For headers after FAQ (but not the first one), add spacers
                 if (i > faqIndex) {
                     const spacer = document.createElement('p');
-                    spacer.innerHTML = '';
+                    spacer.innerHTML = '&nbsp;';
                     header.parentNode.insertBefore(spacer, header);
                     continue;
                 }
@@ -448,7 +448,7 @@ const ShopifyTransformer = {
             
             // Add spacer before all other headers (before FAQ section)
             const spacer = document.createElement('p');
-            spacer.innerHTML = '';
+            spacer.innerHTML = '&nbsp;';
             header.parentNode.insertBefore(spacer, header);
         }
 
@@ -474,7 +474,7 @@ const ShopifyTransformer = {
             if (text.includes('sources') && (text === 'sources' || text === 'sources:' || text.includes('sources:'))) {
                 // Add spacer before Sources paragraph
                 const spacer = document.createElement('p');
-                spacer.innerHTML = '';
+                spacer.innerHTML = '&nbsp;';
                 p.parentNode.insertBefore(spacer, p);
                 
                 // Format the Sources paragraph

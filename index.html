@@ -3,10 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WordHTML2 - Word to HTML Converter</title>
+    <title>WordHTML2 - Clean HTML Conversion Tool | Word to HTML Converter</title>
+    <meta name="description" content="Transform Microsoft Word documents into clean, semantic HTML instantly. Professional conversion tool with custom CSS support, multiple output formats, and zero bloat.">
+    <script>
+        // Prevent flash of light mode - must run before page renders
+        (function() {
+            const savedTheme = localStorage.getItem('wordhtml2-theme');
+            const theme = savedTheme || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/input-area.css">
@@ -14,117 +23,162 @@
     <link rel="stylesheet" href="css/toolbar.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar with Toolbar -->
-        <aside class="toolbar-area" id="toolbar-area">
-            <!-- Icon Bar (visible when collapsed) -->
-            <div class="toolbar-icon-bar">
-                <div class="toolbar-icon-item">
-                    <span class="toolbar-logo" title="WordHTML2">W2</span>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="header-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
                 </div>
-                <div class="toolbar-icon-item">
-                    <button id="dark-mode-toggle-icon" class="dark-mode-toggle icon-only" aria-label="Toggle dark mode" title="Toggle dark mode">
-                        <svg class="icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="5"></circle>
-                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                <div class="logo-text">
+                    <h1 class="logo-title">WordHTML2</h1>
+                    <p class="logo-subtitle">Document Converter</p>
+                </div>
+            </div>
+            
+            <nav class="header-nav">
+                <a href="#converter" class="nav-link">Converter</a>
+                <a href="#features" class="nav-link">Features</a>
+                <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                    <svg class="icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg class="icon moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <svg class="hero-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span>Professional HTML Conversion</span>
+                </div>
+                
+                <h2 class="hero-title">
+                    Transform Word Documents<br>
+                    <span class="hero-title-accent">Into Clean HTML</span>
+                </h2>
+                
+                <p class="hero-description">
+                    A precision tool for converting Microsoft Word content into semantic, 
+                    well-structured HTML. Designed for developers, content creators, and digital publishers 
+                    who demand clean code without the markup bloat.
+                </p>
+                
+                <div class="hero-cta">
+                    <a href="#converter" class="btn btn-primary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
                         </svg>
-                        <svg class="icon moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        <span>Start Converting</span>
+                    </a>
+                    
+                    <a href="#features" class="btn btn-secondary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
                         </svg>
-                    </button>
+                        <span>View Features</span>
+                    </a>
                 </div>
-                <div class="toolbar-icon-item">
-                    <span id="mode-badge-icon" class="mode-badge-icon" title="Regular mode">REG</span>
-                </div>
-                <div class="toolbar-icon-spacer"></div>
-                <div class="toolbar-icon-item">
-                    <button id="sidebar-expand" class="sidebar-expand-btn" aria-label="Expand sidebar" title="Expand sidebar">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
-                    </button>
-                </div>
+            </div>
+            
+            <!-- Decorative background -->
+            <div class="hero-bg">
+                <div class="hero-bg-circle hero-bg-circle-1"></div>
+                <div class="hero-bg-circle hero-bg-circle-2"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Converter Section -->
+    <section id="converter" class="converter">
+        <div class="converter-container">
+            <div class="converter-header">
+                <h3 class="converter-title">Conversion Tool</h3>
+                <p class="converter-description">
+                    Paste your Word content, configure output settings, and receive clean, semantic HTML
+                </p>
             </div>
 
-            <!-- Full Sidebar (visible when expanded) -->
-            <div class="toolbar-header">
-                <h1 class="toolbar-title">WordHTML2</h1>
-                <div class="toolbar-header-controls">
-                    <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
-                        <svg class="icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="5"></circle>
-                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
-                        <svg class="icon moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                        </svg>
-                    </button>
-                    <button id="sidebar-collapse" class="sidebar-collapse-btn" aria-label="Collapse sidebar" title="Collapse sidebar">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="toolbar-content">
-                <div class="toolbar-section">
-                    <div class="toolbar-group">
-                        <label for="mode-select">Output Mode:</label>
+            <div class="converter-content">
+                <!-- Configuration Panel -->
+                <aside class="config-panel">
+                    <div class="config-group">
+                        <div class="config-group-header">
+                            <svg class="config-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <h4>Output Mode</h4>
+                        </div>
+                        
                         <select id="mode-select" class="mode-select" aria-label="Select output mode">
                             <option value="regular">Regular</option>
                             <option value="shopify">Shopify Blogs</option>
                         </select>
-                        <span id="mode-badge" class="mode-badge" aria-live="polite">Regular</span>
                     </div>
 
-                    <div id="format-info" class="format-info" style="display: none;" role="region" aria-label="Format transformation details">
-                        <div class="format-info-header">
-                            <div class="format-info-title">This format will:</div>
-                            <button class="format-info-toggle" aria-label="Toggle format details" aria-expanded="true">
-                                <svg class="icon chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="6 9 12 15 18 9"></polyline>
-                                </svg>
-                            </button>
+                    <div class="config-separator"></div>
+
+                    <div class="config-group">
+                        <h4 class="config-group-title">Format Options</h4>
+                        
+                        <div id="format-info" class="format-info" style="display: none;" role="region" aria-label="Format transformation details">
+                            <div class="format-info-header">
+                                <div class="format-info-title">This format will:</div>
+                                <button class="format-info-toggle" aria-label="Toggle format details" aria-expanded="true">
+                                    <svg class="icon chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+                            <ul class="format-info-list" id="format-info-list"></ul>
                         </div>
-                        <ul class="format-info-list" id="format-info-list"></ul>
-                    </div>
 
-                    <div id="shopify-options" class="shopify-options" style="display: none;">
-                        <div class="toolbar-group">
-                            <label>
+                        <div id="shopify-options" class="shopify-options" style="display: none;">
+                            <label class="checkbox-label">
                                 <input type="checkbox" id="sop" class="option-checkbox" value="sop" aria-label="Enable SOP (Standard Operating Procedure)">
-                                SOP (Standard Operating Procedure)
+                                <span>SOP (Standard Operating Procedure)</span>
                             </label>
-                            <div id="sop-sub-options" class="sop-sub-options" style="display: none; margin-left: 20px; margin-top: 8px;" role="group" aria-labelledby="sop-label">
-                                <label id="sop-label">
+                            <div id="sop-sub-options" class="sop-sub-options" style="display: none;" role="group" aria-labelledby="sop-label">
+                                <label class="checkbox-label">
                                     <input type="checkbox" id="sop-remove-spacing" class="option-checkbox" value="remove-spacing" aria-label="Remove spacing in SOP mode">
-                                    Remove Spacing
+                                    <span>Remove Spacing</span>
                                 </label>
-                                <label>
+                                <label class="checkbox-label">
                                     <input type="checkbox" id="sop-remove-domain" class="option-checkbox" value="remove-domain" aria-label="Remove domain from links in SOP mode">
-                                    Remove Domain on Link
+                                    <span>Remove Domain on Link</span>
                                 </label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="toolbar-section">
-                        <div class="toolbar-section-header">
-                            <h2>Custom CSS</h2>
+                    <div class="config-separator"></div>
+
+                    <div class="config-group">
+                        <div class="config-group-header">
+                            <h4>Custom CSS</h4>
                             <button id="css-maximize-btn" class="css-maximize-button" title="Maximize CSS editor" aria-label="Maximize CSS editor">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
@@ -136,104 +190,227 @@
                             <textarea id="custom-css" class="custom-css-input" placeholder="Enter custom CSS here..." aria-label="Custom CSS input" spellcheck="false"></textarea>
                         </div>
                     </div>
-                </div>
-                </div>
-            </aside>
+                </aside>
 
-        <!-- Main Content Area -->
-        <div class="main-content">
-            <!-- Content Area -->
-            <div class="content-area">
-                <!-- Source Section -->
-                <section class="input-area">
-                    <div class="input-area-header">
-                        <div class="input-area-title-group">
-                            <h2>Source <span id="input-count" class="input-count" aria-live="polite" aria-atomic="true"></span></h2>
-                        </div>
-                        <button id="clear-input" class="clear-input-button" title="Clear input (Ctrl+K)" aria-label="Clear input">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="input-wrapper">
-                        <div id="input-empty-state" class="empty-state input-empty-state">
-                            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                                <polyline points="10 9 9 9 8 9"></polyline>
-                            </svg>
-                            <h3 class="empty-state-title">Paste Your Word Document</h3>
-                            <p class="empty-state-description">Copy content from Microsoft Word and paste it here. The app will automatically convert it to clean HTML.</p>
-                            <div class="empty-state-tip">
-                                <strong>Tip:</strong> Use Ctrl+V (or Cmd+V on Mac) to paste
-                            </div>
-                        </div>
-                        <div id="input-editor" class="input-editor" contenteditable="true" placeholder="Paste your Word document content here..." role="textbox" aria-label="Input area for Word document content" aria-multiline="true"></div>
-                    </div>
-                </section>
-
-                <!-- HTML Output Section -->
-                <section class="output-area">
-                    <div class="output-area-header">
-                        <h2>HTML</h2>
-                        <div class="output-controls">
-                            <button id="preview-toggle" class="preview-toggle-button" title="Toggle Preview/Code (Ctrl+P)" aria-label="Toggle between preview and code view" aria-pressed="false">
-                                <svg class="icon preview-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
+                <!-- Conversion Panels -->
+                <div class="conversion-panels">
+                    <!-- Source Panel -->
+                    <div class="panel source-panel">
+                        <div class="panel-header">
+                            <div class="panel-title-group">
+                                <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
                                 </svg>
-                                <svg class="icon code-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <h4>Source</h4>
+                                <span id="input-count" class="word-count" aria-live="polite" aria-atomic="true"></span>
+                            </div>
+                            <button id="clear-input" class="panel-button" title="Clear input (Ctrl+K)" aria-label="Clear input">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="panel-content">
+                            <div id="input-empty-state" class="panel-empty-state">
+                                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                                <p class="empty-text">Paste Your Word Document</p>
+                            </div>
+                            <div id="input-editor" class="panel-editor" contenteditable="true" placeholder="Paste your Word document content here...&#10;&#10;Use Ctrl+V (or Cmd+V on Mac) to paste" role="textbox" aria-label="Input area for Word document content" aria-multiline="true"></div>
+                        </div>
+                    </div>
+
+                    <!-- HTML Output Panel -->
+                    <div class="panel output-panel">
+                        <div class="panel-header">
+                            <div class="panel-title-group">
+                                <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                     <polyline points="16 18 22 12 16 6"></polyline>
                                     <polyline points="8 6 2 12 8 18"></polyline>
                                 </svg>
-                            </button>
-                            <button id="download-output" class="download-button" title="Download HTML (Ctrl+D)" aria-label="Download HTML">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                </svg>
-                            </button>
-                            <button id="copy-output" class="copy-button" title="Copy HTML (Ctrl+C)" aria-label="Copy HTML">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="output-wrapper">
-                        <div id="output-empty-state" class="empty-state output-empty-state">
-                            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <polyline points="16 18 22 12 16 6"></polyline>
-                                <polyline points="8 6 2 12 8 18"></polyline>
-                            </svg>
-                            <h3 class="empty-state-title">HTML Output Will Appear Here</h3>
-                            <p class="empty-state-description">Once you paste content in the input area, the converted HTML will be displayed here.</p>
-                            <div class="empty-state-tip">
-                                <strong>Tip:</strong> Toggle between code view and preview mode using the preview button
+                                <h4>HTML Output</h4>
+                            </div>
+                            <div class="panel-controls">
+                                <button id="preview-toggle" class="panel-button" title="Toggle Preview/Code (Ctrl+P)" aria-label="Toggle between preview and code view" aria-pressed="false">
+                                    <svg class="icon preview-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <svg class="icon code-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="16 18 22 12 16 6"></polyline>
+                                        <polyline points="8 6 2 12 8 18"></polyline>
+                                    </svg>
+                                </button>
+                                <button id="copy-output" class="panel-button panel-button-primary" title="Copy HTML (Ctrl+C)" aria-label="Copy HTML">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                <button id="download-output" class="panel-button" title="Download HTML (Ctrl+D)" aria-label="Download HTML">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
-                        <div id="output-display" class="output-display"></div>
+                        <div class="panel-content">
+                            <div id="output-empty-state" class="panel-empty-state">
+                                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                    <polyline points="16 18 22 12 16 6"></polyline>
+                                    <polyline points="8 6 2 12 8 18"></polyline>
+                                </svg>
+                                <p class="empty-text">HTML Output Will Appear Here</p>
+                                <p class="empty-subtext">Once you paste content, the converted HTML will be displayed here</p>
+                            </div>
+                            <div id="output-display" class="panel-output"></div>
+                        </div>
                     </div>
-                </section>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="features-container">
+            <div class="features-header">
+                <h3 class="features-title">Why WordHTML2?</h3>
+                <p class="features-description">
+                    Built for professionals who need precision, speed, and reliability in their content workflow
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    </div>
+                    <h4 class="feature-title">Clean Output</h4>
+                    <p class="feature-description">Removes Microsoft Word's bloated markup and inline styles, leaving only semantic HTML5 elements</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </div>
+                    <h4 class="feature-title">Real-Time Conversion</h4>
+                    <p class="feature-description">Instant HTML generation as you paste—no uploads, no waiting, no server processing</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="M21 21l-4.35-4.35"></path>
+                            <path d="M11 8a3 3 0 0 0-3 3"></path>
+                        </svg>
+                    </div>
+                    <h4 class="feature-title">Shopify Blog Ready</h4>
+                    <p class="feature-description">Specialized mode with H1 removal, list combining, and SOP formatting for Shopify stores</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                    </div>
+                    <h4 class="feature-title">Custom CSS Styling</h4>
+                    <p class="feature-description">Built-in CSS editor with line numbers to add custom styles directly to your output</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </div>
+                    <h4 class="feature-title">Live Preview Mode</h4>
+                    <p class="feature-description">Toggle between code and rendered preview to see exactly how your HTML will look</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <h4 class="feature-title">Complete Privacy</h4>
+                    <p class="feature-description">100% client-side processing—your documents never touch a server or leave your device</p>
+                </div>
+            </div>
+
+            <div class="how-it-works">
+                <h4 class="how-it-works-title">How It Works</h4>
+                <div class="how-it-works-steps">
+                    <div class="how-it-works-step">
+                        <div class="step-number">1</div>
+                        <p class="step-text">Copy content from Microsoft Word</p>
+                    </div>
+                    <div class="how-it-works-step">
+                        <div class="step-number">2</div>
+                        <p class="step-text">Paste into source panel and configure</p>
+                    </div>
+                    <div class="how-it-works-step">
+                        <div class="step-number">3</div>
+                        <p class="step-text">Get clean HTML ready to use</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <p class="footer-logo-title">WordHTML2</p>
+                    <p class="footer-logo-subtitle">Document Converter</p>
+                </div>
+            </div>
+            
+            <p class="footer-text">
+                © <span id="current-year"></span> WordHTML2. All conversions happen client-side.
+            </p>
+        </div>
+    </footer>
 
     <!-- CSS Editor Modal -->
     <div id="css-editor-modal" class="css-editor-modal" role="dialog" aria-labelledby="css-modal-title" aria-modal="true">
         <div class="css-editor-modal-overlay"></div>
         <div class="css-editor-modal-content">
             <div class="css-editor-modal-header">
-                <h3 id="css-modal-title" class="css-editor-modal-title">Custom CSS Editor</h3>
-                <button id="css-minimize-btn" class="css-minimize-button" title="Minimize CSS editor" aria-label="Minimize CSS editor">
+                <h3 id="css-modal-title" class="css-editor-modal-title">
+                    <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                    Custom CSS Editor
+                </h3>
+                <button id="css-minimize-btn" class="css-minimize-button" title="Close CSS editor (Esc)" aria-label="Close CSS editor">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                 </button>
             </div>
@@ -264,6 +441,10 @@
     </div>
 
     <!-- Scripts -->
+    <script>
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
     <script src="js/utils/html-parser.js"></script>
     <script src="js/input/paste-handler.js"></script>
     <script src="js/converter/html-cleaner.js"></script>
