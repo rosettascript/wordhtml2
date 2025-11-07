@@ -260,10 +260,17 @@ const HtmlCleaner = {
             const fontStyleMatch = style.match(/font-style\s*:\s*italic/i) || 
                                    style.match(/font-style\s*:\s*oblique/i) ||
                                    style.match(/font-style\s*:\s*italic\s*;/i);
+            const verticalAlignMatch = style.match(/vertical-align\s*:\s*(super|sub)/i);
             
             let replacement = null;
             
-            if (fontWeightMatch && fontStyleMatch) {
+            if (verticalAlignMatch && !hasBlockElement) {
+                const tagName = verticalAlignMatch[1].toLowerCase() === 'super' ? 'sup' : 'sub';
+                replacement = document.createElement(tagName);
+                while (span.firstChild) {
+                    replacement.appendChild(span.firstChild);
+                }
+            } else if (fontWeightMatch && fontStyleMatch) {
                 // Both bold and italic
                 replacement = document.createElement('strong');
                 const em = document.createElement('em');
@@ -318,6 +325,7 @@ const HtmlCleaner = {
             const fontStyleMatch = style.match(/font-style\s*:\s*italic/i) || 
                                    style.match(/font-style\s*:\s*oblique/i) ||
                                    style.match(/font-style\s*:\s*italic\s*;/i);
+            const verticalAlignMatch = style.match(/vertical-align\s*:\s*(super|sub)/i);
             
             // Check if span contains block elements
             let hasBlockElement = false;
@@ -338,9 +346,15 @@ const HtmlCleaner = {
                 parent.removeChild(span);
             } else {
                 // If span has style but wasn't converted earlier, convert it now before removing
-                if (style && (fontWeightMatch || fontStyleMatch)) {
+                if (style && (fontWeightMatch || fontStyleMatch || verticalAlignMatch)) {
                     let wrapper = null;
-                    if (fontWeightMatch && fontStyleMatch) {
+                    if (verticalAlignMatch) {
+                        const tagName = verticalAlignMatch[1].toLowerCase() === 'super' ? 'sup' : 'sub';
+                        wrapper = document.createElement(tagName);
+                        while (span.firstChild) {
+                            wrapper.appendChild(span.firstChild);
+                        }
+                    } else if (fontWeightMatch && fontStyleMatch) {
                         // Both bold and italic
                         wrapper = document.createElement('strong');
                         const em = document.createElement('em');
@@ -849,6 +863,10 @@ const HtmlCleaner = {
             // Convert font-style:italic to <em>
             // Pattern: <span style="font-style: italic">content</span> -> <em>content</em>
             cleaned = cleaned.replace(/<span[^>]*style="[^"]*font-style\s*:\s*italic[^"]*"[^>]*>(.*?)<\/span>/gis, '<em>$1</em>');
+
+            // Convert vertical-align: super/sub to <sup>/<sub>
+            cleaned = cleaned.replace(/<span[^>]*style="[^"]*vertical-align\s*:\s*super[^"]*"[^>]*>(.*?)<\/span>/gis, '<sup>$1</sup>');
+            cleaned = cleaned.replace(/<span[^>]*style="[^"]*vertical-align\s*:\s*sub[^"]*"[^>]*>(.*?)<\/span>/gis, '<sub>$1</sub>');
         }
         
         return cleaned;
