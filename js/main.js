@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const shoppablesBrReadAlso = document.getElementById('shoppables-br-read-also');
     const shoppablesBrSources = document.getElementById('shoppables-br-sources');
     const shoppablesDisableSources = document.getElementById('shoppables-disable-sources');
+    const shoppablesRemoveDomain = document.getElementById('shoppables-remove-domain');
     const customCSSInput = document.getElementById('custom-css');
     const inputEmptyState = document.getElementById('input-empty-state');
     const outputEmptyState = document.getElementById('output-empty-state');
@@ -140,7 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         savedShoppablesOptions = {
                             shoppablesBrReadAlso: !!parsedShoppables.shoppablesBrReadAlso,
                             shoppablesBrSources: !!parsedShoppables.shoppablesBrSources,
-                            shoppablesDisableSources: !!parsedShoppables.shoppablesDisableSources
+                            shoppablesDisableSources: !!parsedShoppables.shoppablesDisableSources,
+                            shoppablesRemoveDomain: !!parsedShoppables.shoppablesRemoveDomain
                         };
                     }
                 } catch (err) {
@@ -165,6 +167,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (shoppablesDisableSources) {
                 shoppablesDisableSources.checked = savedShoppablesOptions ? savedShoppablesOptions.shoppablesDisableSources : false;
+            }
+            if (shoppablesRemoveDomain) {
+                shoppablesRemoveDomain.checked = savedShoppablesOptions ? savedShoppablesOptions.shoppablesRemoveDomain : false;
             }
         } catch (e) {
             console.warn('Failed to load settings from localStorage:', e);
@@ -191,7 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const shoppablesToSave = {
                 shoppablesBrReadAlso: !!(shoppablesBrReadAlso && shoppablesBrReadAlso.checked),
                 shoppablesBrSources: !!(shoppablesBrSources && shoppablesBrSources.checked),
-                shoppablesDisableSources: !!(shoppablesDisableSources && shoppablesDisableSources.checked)
+                shoppablesDisableSources: !!(shoppablesDisableSources && shoppablesDisableSources.checked),
+                shoppablesRemoveDomain: !!(shoppablesRemoveDomain && shoppablesRemoveDomain.checked)
             };
             localStorage.setItem(SHOPPABLES_OPTIONS_STORAGE_KEY, JSON.stringify(shoppablesToSave));
         } catch (e) {
@@ -356,7 +362,8 @@ document.addEventListener('DOMContentLoaded', () => {
         shoppablesSopSubOptions: shoppablesSopSubOptions,
         shoppablesBrReadAlso: shoppablesBrReadAlso,
         shoppablesBrSources: shoppablesBrSources,
-        shoppablesDisableSources: shoppablesDisableSources
+        shoppablesDisableSources: shoppablesDisableSources,
+        shoppablesRemoveDomain: shoppablesRemoveDomain
     }, () => {
         saveSettings();
         updateOutput();

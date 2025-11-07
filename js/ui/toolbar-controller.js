@@ -13,7 +13,8 @@ const ToolbarController = {
         shoppablesSop: false,
         shoppablesBrReadAlso: false,
         shoppablesBrSources: false,
-        shoppablesDisableSources: false
+        shoppablesDisableSources: false,
+        shoppablesRemoveDomain: false
     },
     onChangeCallback: null,
 
@@ -33,7 +34,7 @@ const ToolbarController = {
             'Preserve existing H1 heading content',
             'Auto-format Sources section with italicized numbered entries',
             'Insert optional <br> before Read also / Sources sections',
-            'Add rel="noopener" and target="_blank" to all links',
+            'Add rel="noopener" / target="_blank" and optionally remove link domains',
             'Clean up extra spacing without spacer paragraphs'
         ],
         regular: []
@@ -55,6 +56,7 @@ const ToolbarController = {
      * @param {HTMLElement} elements.shoppablesBrReadAlso - Shoppables <br> before Read also checkbox
      * @param {HTMLElement} elements.shoppablesBrSources - Shoppables <br> before Sources checkbox
      * @param {HTMLElement} elements.shoppablesDisableSources - Shoppables disable sources formatting checkbox
+     * @param {HTMLElement} elements.shoppablesRemoveDomain - Shoppables remove domain from links checkbox
      * @param {Function} onChangeCallback - Callback when options change
      * @param {Object} initialOptions - Saved options to initialize with
      */
@@ -213,6 +215,13 @@ const ToolbarController = {
         if (elements.shoppablesDisableSources) {
             elements.shoppablesDisableSources.addEventListener('change', (e) => {
                 this.options.shoppablesDisableSources = e.target.checked;
+                this.notifyChange();
+            });
+        }
+
+        if (elements.shoppablesRemoveDomain) {
+            elements.shoppablesRemoveDomain.addEventListener('change', (e) => {
+                this.options.shoppablesRemoveDomain = e.target.checked;
                 this.notifyChange();
             });
         }
@@ -406,11 +415,16 @@ const ToolbarController = {
                 if (disableSourcesCheckbox) {
                     disableSourcesCheckbox.checked = this.options.shoppablesDisableSources;
                 }
+                const removeDomainCheckbox = document.getElementById('shoppables-remove-domain');
+                if (removeDomainCheckbox) {
+                    removeDomainCheckbox.checked = this.options.shoppablesRemoveDomain;
+                }
             } else {
                 shoppablesSopSubOptions.style.display = 'none';
                 this.options.shoppablesBrReadAlso = false;
                 this.options.shoppablesBrSources = false;
                 this.options.shoppablesDisableSources = false;
+                this.options.shoppablesRemoveDomain = false;
                 const brReadAlsoCheckbox = document.getElementById('shoppables-br-read-also');
                 if (brReadAlsoCheckbox) {
                     brReadAlsoCheckbox.checked = false;
@@ -422,6 +436,10 @@ const ToolbarController = {
                 const disableSourcesCheckbox = document.getElementById('shoppables-disable-sources');
                 if (disableSourcesCheckbox) {
                     disableSourcesCheckbox.checked = false;
+                }
+                const removeDomainCheckbox = document.getElementById('shoppables-remove-domain');
+                if (removeDomainCheckbox) {
+                    removeDomainCheckbox.checked = false;
                 }
             }
         }
@@ -455,6 +473,7 @@ const ToolbarController = {
         this.options.shoppablesBrReadAlso = false;
         this.options.shoppablesBrSources = false;
         this.options.shoppablesDisableSources = false;
+        this.options.shoppablesRemoveDomain = false;
         if (elements.shoppablesSopSubOptions) {
             this.updateShoppablesSubOptionsVisibility(elements.shoppablesSopSubOptions);
         }

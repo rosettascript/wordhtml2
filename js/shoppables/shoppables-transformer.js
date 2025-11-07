@@ -24,7 +24,8 @@ const ShoppablesTransformer = {
             shoppablesSop: options.shoppablesSop !== false,
             shoppablesBrReadAlso: !!options.shoppablesBrReadAlso,
             shoppablesBrSources: !!options.shoppablesBrSources,
-            shoppablesDisableSources: !!options.shoppablesDisableSources
+            shoppablesDisableSources: !!options.shoppablesDisableSources,
+            shoppablesRemoveDomain: !!options.shoppablesRemoveDomain
         };
 
         // Base cleanup borrowed from Shopify transformer helpers
@@ -33,7 +34,7 @@ const ShoppablesTransformer = {
         result = ShopifyTransformer.removeEmTags(result);
         result = this.convertSourcesListToParagraphs(result, shoppablesOptions);
         result = ShopifyTransformer.fixKeyTakeawaysColon(result);
-        result = ShopifyTransformer.fixAllLinks(result, { sopRemoveDomain: false });
+        result = ShopifyTransformer.fixAllLinks(result, { sopRemoveDomain: !!shoppablesOptions.shoppablesRemoveDomain });
 
         // Apply SOP-specific tweaks (line breaks instead of spacer paragraphs)
         if (shoppablesOptions.shoppablesSop) {
