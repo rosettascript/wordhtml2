@@ -8,6 +8,9 @@ const OutputRenderer = {
     customCSS: '',
     previewMode: false,
     currentHTML: '',
+    editMode: false,
+    manuallyEdited: false,
+    editedHTML: '',
 
     /**
      * Initialize output renderer
@@ -23,6 +26,9 @@ const OutputRenderer = {
         this.previewMode = false;
         this.currentHTML = '';
         this.customCSS = '';
+        this.editMode = false;
+        this.manuallyEdited = false;
+        this.editedHTML = '';
     },
 
     /**
@@ -56,8 +62,9 @@ const OutputRenderer = {
      * Render HTML output
      * @param {string} html - HTML to render
      * @param {string} customCSS - Custom CSS to apply
+     * @param {boolean} fromInput - Whether this render is triggered by input change (resets manual edits)
      */
-    render(html, customCSS = '') {
+    render(html, customCSS = '', fromInput = false) {
         if (!this.outputElement) {
             console.error('OutputRenderer: not initialized');
             return;
@@ -75,15 +82,24 @@ const OutputRenderer = {
         // Store HTML and CSS (even if empty)
         this.customCSS = customCSS || '';
         this.currentHTML = html || '';
+        
+        // If this is from input change, reset manual edits
+        if (fromInput) {
+            this.manuallyEdited = false;
+            this.editedHTML = '';
+        }
 
         // Clear the output element
         this.outputElement.innerHTML = '';
         
+        // Decide which HTML to render (edited or original)
+        const htmlToRender = (this.manuallyEdited && this.editedHTML) ? this.editedHTML : this.currentHTML;
+        
         // Render in preview mode or code mode
         if (this.previewMode) {
-            this.renderPreview(this.currentHTML, this.customCSS);
+            this.renderPreview(htmlToRender, this.customCSS);
         } else {
-            this.renderCode(this.currentHTML, this.customCSS);
+            this.renderCode(htmlToRender, this.customCSS);
         }
 
         // Restore scroll position after content renders
@@ -171,27 +187,54 @@ const OutputRenderer = {
         // Format HTML with line breaks (same as what gets copied)
         let formattedHTML = this.formatHTMLWithLineBreaks(decodedHTML);
         
-        // Create <pre><code> block to display HTML with syntax highlighting
-        const pre = document.createElement('pre');
-        const code = document.createElement('code');
-        
-        // Add language class for Prism.js syntax highlighting
-        code.className = 'language-markup';
-        
-        // Add custom CSS at the top if provided (without <style> tags in display)
-        if (customCSS && customCSS.trim()) {
-            // Display CSS without <style> tags
-            code.textContent = customCSS.trim() + '\n\n' + formattedHTML;
+        // If in edit mode, create an editable textarea
+        if (this.editMode) {
+            this.outputElement.classList.add('edit-mode');
+            
+            // Create textarea for editing
+            const textarea = document.createElement('textarea');
+            textarea.className = 'output-editor';
+            textarea.spellcheck = false;
+            
+            // Add custom CSS at the top if provided
+            if (customCSS && customCSS.trim()) {
+                textarea.value = customCSS.trim() + '\n\n' + formattedHTML;
+            } else {
+                textarea.value = formattedHTML;
+            }
+            
+            // Add input listener to track manual edits
+            textarea.addEventListener('input', () => {
+                this.manuallyEdited = true;
+                this.editedHTML = textarea.value;
+            });
+            
+            this.outputElement.appendChild(textarea);
         } else {
-            code.textContent = formattedHTML;
-        }
-        
-        pre.appendChild(code);
-        this.outputElement.appendChild(pre);
-        
-        // Apply Prism.js syntax highlighting
-        if (window.Prism) {
-            Prism.highlightElement(code);
+            // Read-only code view with syntax highlighting
+            this.outputElement.classList.remove('edit-mode');
+            
+            const pre = document.createElement('pre');
+            const code = document.createElement('code');
+            
+            // Add language class for Prism.js syntax highlighting
+            code.className = 'language-markup';
+            
+            // Add custom CSS at the top if provided (without <style> tags in display)
+            if (customCSS && customCSS.trim()) {
+                // Display CSS without <style> tags
+                code.textContent = customCSS.trim() + '\n\n' + formattedHTML;
+            } else {
+                code.textContent = formattedHTML;
+            }
+            
+            pre.appendChild(code);
+            this.outputElement.appendChild(pre);
+            
+            // Apply Prism.js syntax highlighting
+            if (window.Prism) {
+                Prism.highlightElement(code);
+            }
         }
     },
 
@@ -220,6 +263,12 @@ const OutputRenderer = {
         // Create a container for the preview
         const previewContainer = document.createElement('div');
         previewContainer.className = 'preview-container';
+        
+        // If in edit mode, add rich text editor toolbar
+        if (this.editMode) {
+            const toolbar = this.createRichTextToolbar();
+            previewContainer.appendChild(toolbar);
+        }
         
         // Add custom CSS if provided (add it first, before HTML content)
         if (customCSS && customCSS.trim()) {
@@ -282,11 +331,140 @@ const OutputRenderer = {
         
         // Create a content container for the HTML
         const contentDiv = document.createElement('div');
+        contentDiv.className = 'preview-content';
         contentDiv.innerHTML = decodedHTML;
+        
+        // Make it editable if in edit mode
+        if (this.editMode) {
+            contentDiv.contentEditable = 'true';
+            contentDiv.setAttribute('spellcheck', 'false');
+            
+            // Track changes
+            contentDiv.addEventListener('input', () => {
+                this.manuallyEdited = true;
+                this.editedHTML = contentDiv.innerHTML;
+            });
+            
+            // Handle keyboard shortcuts for formatting
+            contentDiv.addEventListener('keydown', (e) => {
+                const modifier = e.ctrlKey || e.metaKey;
+                
+                // Allow Tab key to insert spaces (instead of changing focus)
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    document.execCommand('insertText', false, '  ');
+                    return;
+                }
+                
+                // Handle formatting shortcuts
+                if (modifier) {
+                    switch (e.key.toLowerCase()) {
+                        case 'z':
+                            // Undo (Ctrl+Z / Cmd+Z)
+                            e.preventDefault();
+                            document.execCommand('undo', false, null);
+                            break;
+                        case 'y':
+                            // Redo (Ctrl+Y / Cmd+Y)
+                            e.preventDefault();
+                            document.execCommand('redo', false, null);
+                            break;
+                        case 'b':
+                            // Bold (Ctrl+B / Cmd+B)
+                            e.preventDefault();
+                            document.execCommand('bold', false, null);
+                            break;
+                        case 'i':
+                            // Italic (Ctrl+I / Cmd+I)
+                            e.preventDefault();
+                            document.execCommand('italic', false, null);
+                            break;
+                        case 'u':
+                            // Underline (Ctrl+U / Cmd+U)
+                            e.preventDefault();
+                            document.execCommand('underline', false, null);
+                            break;
+                    }
+                }
+            });
+        }
+        
         previewContainer.appendChild(contentDiv);
         
         this.outputElement.appendChild(previewContainer);
         this.outputElement.classList.add('preview-mode');
+        if (this.editMode) {
+            this.outputElement.classList.add('edit-mode');
+        }
+    },
+
+    /**
+     * Create rich text editor toolbar
+     * @returns {HTMLElement} - Toolbar element
+     */
+    createRichTextToolbar() {
+        const toolbar = document.createElement('div');
+        toolbar.className = 'rich-text-toolbar';
+        
+        // Formatting buttons configuration
+        const buttons = [
+            { command: 'undo', icon: '↶', title: 'Undo (Ctrl+Z)', className: 'action-undo' },
+            { command: 'redo', icon: '↷', title: 'Redo (Ctrl+Y)', className: 'action-redo' },
+            { type: 'separator' },
+            { command: 'bold', icon: 'B', title: 'Bold (Ctrl+B)', className: 'format-bold' },
+            { command: 'italic', icon: 'I', title: 'Italic (Ctrl+I)', className: 'format-italic' },
+            { command: 'underline', icon: 'U', title: 'Underline (Ctrl+U)', className: 'format-underline' },
+            { type: 'separator' },
+            { command: 'formatBlock', value: '<h1>', icon: 'H1', title: 'Heading 1' },
+            { command: 'formatBlock', value: '<h2>', icon: 'H2', title: 'Heading 2' },
+            { command: 'formatBlock', value: '<h3>', icon: 'H3', title: 'Heading 3' },
+            { command: 'formatBlock', value: '<h4>', icon: 'H4', title: 'Heading 4' },
+            { command: 'formatBlock', value: '<p>', icon: 'P', title: 'Paragraph' },
+            { type: 'separator' },
+            { command: 'insertUnorderedList', icon: '• List', title: 'Bullet List' },
+            { command: 'insertOrderedList', icon: '1. List', title: 'Numbered List' },
+            { type: 'separator' },
+            { command: 'justifyLeft', icon: '≡', title: 'Align Left' },
+            { command: 'justifyCenter', icon: '≣', title: 'Align Center' },
+            { command: 'justifyRight', icon: '≢', title: 'Align Right' },
+            { type: 'separator' },
+            { command: 'removeFormat', icon: '✗', title: 'Clear Formatting' }
+        ];
+        
+        buttons.forEach(btn => {
+            if (btn.type === 'separator') {
+                const separator = document.createElement('div');
+                separator.className = 'toolbar-separator';
+                toolbar.appendChild(separator);
+            } else {
+                const button = document.createElement('button');
+                button.className = 'toolbar-button';
+                if (btn.className) {
+                    button.classList.add(btn.className);
+                }
+                button.textContent = btn.icon;
+                button.title = btn.title;
+                button.type = 'button';
+                
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (btn.value) {
+                        document.execCommand(btn.command, false, btn.value);
+                    } else {
+                        document.execCommand(btn.command, false, null);
+                    }
+                    // Restore focus to the content area
+                    const contentDiv = this.outputElement.querySelector('.preview-content');
+                    if (contentDiv) {
+                        contentDiv.focus();
+                    }
+                });
+                
+                toolbar.appendChild(button);
+            }
+        });
+        
+        return toolbar;
     },
 
     /**
@@ -305,10 +483,39 @@ const OutputRenderer = {
     },
 
     /**
+     * Toggle edit mode
+     */
+    toggleEdit() {
+        this.editMode = !this.editMode;
+        
+        // If turning ON edit mode, automatically switch to preview mode
+        if (this.editMode && !this.previewMode) {
+            this.previewMode = true;
+        }
+        
+        // If turning off edit mode, keep preview mode on
+        // (users can manually toggle preview if they want code view)
+        
+        // Re-render with current HTML and CSS
+        if (this.currentHTML !== undefined && this.currentHTML !== null) {
+            this.render(this.currentHTML, this.customCSS);
+        }
+        
+        return this.editMode;
+    },
+
+    /**
      * Get current preview mode state
      */
     isPreviewMode() {
         return this.previewMode;
+    },
+    
+    /**
+     * Get current edit mode state
+     */
+    isEditMode() {
+        return this.editMode;
     },
 
     /**
@@ -332,14 +539,21 @@ const OutputRenderer = {
 
     /**
      * Get formatted HTML (for copying)
-     * @param {string} html - HTML string
+     * @param {string} html - HTML string (optional, uses current if not provided)
      * @returns {string} - Formatted HTML with line breaks
      */
     getFormattedHTML(html) {
-        if (!html) return '';
+        // If manually edited, return the edited HTML
+        if (this.manuallyEdited && this.editedHTML) {
+            return this.editedHTML;
+        }
+        
+        // Otherwise use provided HTML or current HTML
+        const htmlToFormat = html || this.currentHTML;
+        if (!htmlToFormat) return '';
         
         // Format HTML with line breaks for readability
-        const formatted = this.formatHTMLWithLineBreaks(html);
+        const formatted = this.formatHTMLWithLineBreaks(htmlToFormat);
         
         // Apply custom CSS wrapper if needed
         if (this.customCSS) {
@@ -347,6 +561,31 @@ const OutputRenderer = {
         }
         
         return formatted;
+    },
+    
+    /**
+     * Get plain text from HTML (for copying in preview mode)
+     * @returns {string} - Plain text content
+     */
+    getPlainText() {
+        // If in preview mode and edit mode, get text from the editable content
+        if (this.previewMode && this.editMode) {
+            const contentDiv = this.outputElement.querySelector('.preview-content');
+            if (contentDiv) {
+                return contentDiv.innerText || contentDiv.textContent || '';
+            }
+        }
+        
+        // Otherwise, extract text from HTML
+        const htmlToConvert = (this.manuallyEdited && this.editedHTML) ? this.editedHTML : this.currentHTML;
+        if (!htmlToConvert) return '';
+        
+        // Create a temporary div to parse HTML and extract text
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlToConvert;
+        
+        // Use innerText to preserve line breaks and formatting
+        return tempDiv.innerText || tempDiv.textContent || '';
     },
     
     /**

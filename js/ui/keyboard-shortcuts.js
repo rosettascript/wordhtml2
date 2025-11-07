@@ -63,10 +63,19 @@ const KeyboardShortcuts = {
                         callbacks.togglePreview();
                     }
                     break;
+                    
+                case 'e':
+                    // Ctrl+E / Cmd+E: Toggle edit mode (only if not in input field)
+                    if (callbacks.toggleEdit && !isInputFocused) {
+                        e.preventDefault();
+                        callbacks.toggleEdit();
+                    }
+                    break;
             }
         });
     }
 };
+
 
 
 

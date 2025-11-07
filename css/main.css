@@ -136,6 +136,7 @@ input:focus-visible,
     height: 36px;
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .dark-mode-toggle:hover {
@@ -199,6 +200,7 @@ input:focus-visible,
     min-width: 0;
     height: 100vh;
     overflow: hidden;
+    transition: margin-left 0.3s ease;
 }
 
 .content-area {
@@ -211,20 +213,58 @@ input:focus-visible,
     flex: 1;
     height: 100%;
     overflow: hidden;
+    transition: all 0.3s ease;
 }
 
-@media (max-width: 1024px) {
-    .app-container {
+/* Responsive breakpoints */
+
+/* Desktop (>1024px): Side-by-side input/output, collapsible sidebar */
+@media (min-width: 1025px) {
+    .content-area {
+        flex-direction: row;
+    }
+}
+
+/* Tablet (768px - 1024px): Stack input/output when sidebar expanded */
+@media (max-width: 1024px) and (min-width: 768px) {
+    .content-area {
         flex-direction: column;
+    }
+    
+    /* When sidebar is collapsed on tablet, try side-by-side if space allows */
+    .toolbar-area.collapsed ~ .main-content .content-area {
+        flex-direction: row;
+    }
+    
+    /* But if too narrow, keep stacked */
+    @media (max-width: 900px) {
+        .toolbar-area.collapsed ~ .main-content .content-area {
+            flex-direction: column;
+        }
+    }
+}
+
+/* Mobile (<768px): Always stack vertically */
+@media (max-width: 767px) {
+    .app-container {
+        flex-direction: row; /* Keep sidebar and content side by side */
     }
     
     .main-content {
         flex: 1;
-        height: auto;
+        margin-left: 0; /* Adjusted by sidebar width */
     }
     
     .content-area {
         flex-direction: column;
+    }
+}
+
+/* Extra small mobile adjustments */
+@media (max-width: 480px) {
+    :root {
+        --spacing-xl: 16px;
+        --spacing-2xl: 20px;
     }
 }
 

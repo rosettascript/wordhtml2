@@ -11,9 +11,115 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transition: width 0.3s ease, min-width 0.3s ease;
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+/* Collapsed state - Icon bar */
+.toolbar-area.collapsed {
+    width: 60px;
+    min-width: 60px;
+}
+
+/* Icon Bar - visible only when collapsed */
+.toolbar-icon-bar {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    padding: var(--spacing-lg) 0;
+    gap: var(--spacing-lg);
+}
+
+.toolbar-area.collapsed .toolbar-icon-bar {
+    display: flex;
+}
+
+.toolbar-icon-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.toolbar-logo {
+    font-size: 1.2em;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    text-align: center;
+    padding: var(--spacing-sm);
+    cursor: default;
+    user-select: none;
+}
+
+.mode-badge-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background-color: var(--bg-surface-alt);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: 0.65em;
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    min-height: 48px;
+}
+
+.toolbar-icon-spacer {
+    flex: 1;
+}
+
+.sidebar-expand-btn,
+.sidebar-collapse-btn {
+    padding: var(--spacing-sm);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-surface);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.sidebar-expand-btn:hover,
+.sidebar-collapse-btn:hover {
+    background-color: var(--bg-surface-alt);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.sidebar-expand-btn:focus-visible,
+.sidebar-collapse-btn:focus-visible {
+    outline: none;
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 2px var(--focus-color);
+}
+
+.sidebar-expand-btn .icon,
+.sidebar-collapse-btn .icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Hide full sidebar content when collapsed */
+.toolbar-area.collapsed .toolbar-header,
+.toolbar-area.collapsed .toolbar-content {
+    display: none;
+}
+
+/* Show full sidebar content when expanded */
+.toolbar-area:not(.collapsed) .toolbar-icon-bar {
+    display: none;
 }
 
 .toolbar-header {
@@ -23,6 +129,7 @@
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
+    gap: var(--spacing-md);
 }
 
 .toolbar-title {
@@ -30,6 +137,10 @@
     color: var(--color-text);
     margin: 0;
     font-weight: var(--font-weight-semibold);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .toolbar-header-controls {
@@ -44,7 +155,8 @@
     overflow-y: auto;
 }
 
-.sidebar-toggle {
+/* Mobile floating toggle button - only visible on mobile when sidebar is completely off-screen */
+.sidebar-mobile-toggle {
     display: none;
     position: fixed;
     top: var(--spacing-md);
@@ -55,29 +167,28 @@
     background-color: var(--bg-surface);
     color: var(--color-text-secondary);
     cursor: pointer;
-    z-index: 1000;
-    width: 36px;
-    height: 36px;
+    z-index: 1001;
+    width: 40px;
+    height: 40px;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
     box-shadow: var(--shadow-subtle);
 }
 
-.sidebar-toggle:hover {
+.sidebar-mobile-toggle:hover {
     background-color: var(--bg-surface-alt);
     border-color: var(--color-accent);
     color: var(--color-accent);
 }
 
-.sidebar-toggle:focus-visible {
+.sidebar-mobile-toggle:focus-visible {
     outline: none;
     border-color: var(--focus-color);
     box-shadow: 0 0 0 2px var(--focus-color);
-    box-shadow-opacity: var(--focus-opacity);
 }
 
-.sidebar-toggle .icon {
+.sidebar-mobile-toggle .icon {
     width: 20px;
     height: 20px;
 }
@@ -471,29 +582,70 @@
     }
 }
 
-/* Collapsible sidebar styles */
-@media (max-width: 1024px) {
-    .sidebar-toggle {
-        display: flex;
-    }
+/* Responsive behavior */
 
+/* Desktop: sidebar is always visible, can collapse to icon bar */
+@media (min-width: 1025px) {
+    .toolbar-area {
+        position: relative;
+    }
+}
+
+/* Tablet: sidebar starts expanded, input/output stack vertically */
+@media (max-width: 1024px) and (min-width: 768px) {
+    .toolbar-area {
+        position: relative;
+    }
+}
+
+/* Mobile: sidebar starts as icon bar, can expand temporarily */
+@media (max-width: 767px) {
     .toolbar-area {
         position: fixed;
         left: 0;
         top: 0;
         z-index: 999;
-        transform: translateX(0);
         box-shadow: var(--shadow-subtle);
     }
-
-    .toolbar-area.collapsed {
-        transform: translateX(-100%);
+    
+    /* On mobile, default to collapsed (icon bar) */
+    .toolbar-area:not(.mobile-expanded) {
+        width: 60px;
+        min-width: 60px;
     }
-}
-
-@media (min-width: 1025px) {
-    .toolbar-area.collapsed {
-        transform: none;
+    
+    .toolbar-area:not(.mobile-expanded) .toolbar-header,
+    .toolbar-area:not(.mobile-expanded) .toolbar-content {
+        display: none;
+    }
+    
+    .toolbar-area:not(.mobile-expanded) .toolbar-icon-bar {
+        display: flex;
+    }
+    
+    /* When expanded on mobile, show full sidebar */
+    .toolbar-area.mobile-expanded {
+        width: 280px;
+        min-width: 280px;
+    }
+    
+    .toolbar-area.mobile-expanded .toolbar-icon-bar {
+        display: none;
+    }
+    
+    .toolbar-area.mobile-expanded .toolbar-header,
+    .toolbar-area.mobile-expanded .toolbar-content {
+        display: flex;
+    }
+    
+    /* Show mobile toggle when sidebar is icon bar */
+    .sidebar-mobile-toggle {
+        display: flex;
+        left: 70px; /* Position next to icon bar */
+    }
+    
+    .toolbar-area.mobile-expanded ~ .sidebar-mobile-toggle {
+        display: none;
     }
 }
 

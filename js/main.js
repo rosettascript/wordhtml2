@@ -26,10 +26,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearInputButton = document.getElementById('clear-input');
     const downloadButton = document.getElementById('download-output');
     const inputCount = document.getElementById('input-count');
-    const sidebarToggle = document.getElementById('sidebar-toggle');
     const toolbarArea = document.getElementById('toolbar-area');
     const modeBadge = document.getElementById('mode-badge');
+    const modeBadgeIcon = document.getElementById('mode-badge-icon');
     const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const darkModeToggleIcon = document.getElementById('dark-mode-toggle-icon');
+    const sidebarCollapse = document.getElementById('sidebar-collapse');
+    const sidebarExpand = document.getElementById('sidebar-expand');
 
     // Dark mode functions
     function getThemePreference() {
@@ -127,13 +130,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize theme
     initTheme();
 
-    // Dark mode toggle handler
+    // Dark mode toggle handlers (both full and icon versions)
+    function toggleDarkMode() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+    }
+    
     if (darkModeToggle) {
-        darkModeToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            setTheme(newTheme);
-        });
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+    }
+    
+    if (darkModeToggleIcon) {
+        darkModeToggleIcon.addEventListener('click', toggleDarkMode);
     }
 
     // Listen for system theme changes
@@ -261,11 +270,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Update mode badge
+    // Update mode badge (both full and icon versions)
     function updateModeBadge() {
         if (modeBadge && modeSelect) {
             const mode = modeSelect.value;
-            modeBadge.textContent = mode === 'shopify' ? 'Shopify Blogs' : 'Regular';
+            const text = mode === 'shopify' ? 'Shopify Blogs' : 'Regular';
+            const shortText = mode === 'shopify' ? 'SHP' : 'REG';
+            const title = mode === 'shopify' ? 'Shopify Blogs mode' : 'Regular mode';
+            
+            modeBadge.textContent = text;
+            
+            if (modeBadgeIcon) {
+                modeBadgeIcon.textContent = shortText;
+                modeBadgeIcon.setAttribute('title', title);
+            }
         }
     }
 
@@ -676,14 +694,93 @@ document.addEventListener('DOMContentLoaded', () => {
         return OutputRenderer.getFormattedHTML(cleanedHTML);
     }
 
-    // Sidebar toggle handler
-    if (sidebarToggle && toolbarArea) {
-        sidebarToggle.addEventListener('click', () => {
-            const isCollapsed = toolbarArea.classList.contains('collapsed');
-            toolbarArea.classList.toggle('collapsed');
-            sidebarToggle.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
+    // Sidebar state management
+    function getSidebarState() {
+        // Check localStorage for saved state
+        const saved = localStorage.getItem('wordhtml2-sidebar-collapsed');
+        if (saved !== null) {
+            return saved === 'true';
+        }
+        
+        // Default state based on screen size
+        if (window.innerWidth < 768) {
+            return true; // Collapsed (icon bar) on mobile
+        }
+        return false; // Expanded on desktop/tablet
+    }
+    
+    function setSidebarState(collapsed) {
+        if (!toolbarArea) return;
+        
+        // On mobile (<768px), use mobile-expanded class for expansion
+        const isMobile = window.innerWidth < 768;
+        
+        if (isMobile) {
+            if (collapsed) {
+                toolbarArea.classList.remove('mobile-expanded');
+                toolbarArea.classList.remove('collapsed');
+            } else {
+                toolbarArea.classList.add('mobile-expanded');
+                toolbarArea.classList.remove('collapsed');
+            }
+        } else {
+            // On desktop/tablet, use collapsed class
+            if (collapsed) {
+                toolbarArea.classList.add('collapsed');
+                toolbarArea.classList.remove('mobile-expanded');
+            } else {
+                toolbarArea.classList.remove('collapsed');
+                toolbarArea.classList.remove('mobile-expanded');
+            }
+        }
+        
+        // Save state
+        localStorage.setItem('wordhtml2-sidebar-collapsed', collapsed.toString());
+        
+        // Update ARIA attributes
+        if (sidebarCollapse) {
+            sidebarCollapse.setAttribute('aria-expanded', !collapsed);
+        }
+        if (sidebarExpand) {
+            sidebarExpand.setAttribute('aria-expanded', collapsed);
+        }
+    }
+    
+    // Initialize sidebar state
+    const initialCollapsed = getSidebarState();
+    setSidebarState(initialCollapsed);
+    
+    // Collapse button handler (in full sidebar)
+    if (sidebarCollapse) {
+        sidebarCollapse.addEventListener('click', () => {
+            setSidebarState(true);
         });
     }
+    
+    // Expand button handler (in icon bar)
+    if (sidebarExpand) {
+        sidebarExpand.addEventListener('click', () => {
+            setSidebarState(false);
+        });
+    }
+    
+    // Handle window resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            // On mobile (<768px), if sidebar is expanded, consider collapsing it
+            // But respect user's choice if they've manually toggled it
+            const width = window.innerWidth;
+            
+            // Only auto-adjust if no user preference is saved
+            if (!localStorage.getItem('wordhtml2-sidebar-collapsed')) {
+                if (width < 768) {
+                    setSidebarState(true);
+                }
+            }
+        }, 250);
+    });
 
     // Initialize Keyboard Shortcuts
     KeyboardShortcuts.init({
