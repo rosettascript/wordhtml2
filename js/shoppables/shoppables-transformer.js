@@ -41,6 +41,9 @@ const ShoppablesTransformer = {
             result = this.applyLineBreakPreferences(result, shoppablesOptions);
         }
 
+        // Always remove spacer paragraphs for Shoppables
+        result = ShopifyTransformer.removeExtraSpacing(result);
+
         return result;
     },
 
