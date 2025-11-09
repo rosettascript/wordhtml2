@@ -110,6 +110,9 @@ const ToolbarController = {
                 // If Shopify Blogs is selected, automatically check and lock SOP
                 if (this.mode === 'shopify') {
                     this.options.sop = true;
+                    this.options.sopRemoveSpacing = false;
+                    this.options.sopRemoveDomain = false;
+                    this.options.sopDisableSources = true;
                     const sopCheckbox = document.getElementById('sop');
                     if (sopCheckbox) {
                         sopCheckbox.checked = true;
