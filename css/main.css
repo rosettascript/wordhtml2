@@ -23,6 +23,12 @@
     
     --border-color: rgba(0, 0, 0, 0.1);
     --border-width: 0.5px;
+    --hero-badge-border: rgba(85, 105, 102, 0.45);
+    --hero-badge-background: rgba(168, 181, 178, 0.18);
+    --btn-secondary-border: rgba(85, 105, 102, 0.5);
+    --btn-secondary-background: rgba(168, 181, 178, 0.08);
+    --btn-secondary-hover-background: rgba(168, 181, 178, 0.14);
+    --btn-secondary-hover-border: rgba(85, 105, 102, 0.6);
     
     /* Focus Colors */
     --focus-color: #A8B5B2;
@@ -72,6 +78,12 @@
     
     --border-color: rgba(255, 255, 255, 0.1);
     --focus-color: #6B7A77;
+    --hero-badge-border: rgba(168, 181, 178, 0.4);
+    --hero-badge-background: rgba(168, 181, 178, 0.12);
+    --btn-secondary-border: rgba(168, 181, 178, 0.4);
+    --btn-secondary-background: rgba(168, 181, 178, 0.06);
+    --btn-secondary-hover-background: rgba(168, 181, 178, 0.12);
+    --btn-secondary-hover-border: rgba(168, 181, 178, 0.55);
 }
 
 /* Dark Mode Font Rendering Fix - Prevent Blurriness */
@@ -316,7 +328,7 @@ body {
     min-height: calc(100vh - 4rem);
     display: flex;
     align-items: center;
-    background-image: linear-gradient(rgba(245, 245, 242, 0.55), rgba(245, 245, 242, 0.55)), url('../wordhtml2.png');
+    background-image: linear-gradient(rgba(245, 245, 242, 0.55), rgba(245, 245, 242, 0.55)), url('../assets/images/wordhtml2.png');
     background-size: cover;
     background-position: center;
     isolation: isolate;
@@ -331,7 +343,7 @@ body {
 }
 
 [data-theme="dark"] .hero {
-    background-image: linear-gradient(rgba(26, 26, 24, 0.82), rgba(26, 26, 24, 0.88)), url('../wordhtml2.png');
+    background-image: linear-gradient(rgba(26, 26, 24, 0.82), rgba(26, 26, 24, 0.88)), url('../assets/images/wordhtml2.png');
 }
 
 [data-theme="dark"] .hero::before {
@@ -361,8 +373,8 @@ body {
     gap: var(--spacing-2);
     padding: var(--spacing-2) var(--spacing-4);
     border-radius: 999px;
-    background-color: rgba(168, 181, 178, 0.1);
-    border: var(--border-width) solid rgba(168, 181, 178, 0.2);
+    background-color: var(--hero-badge-background);
+    border: 1px solid var(--hero-badge-border);
     margin-bottom: var(--spacing-8);
     animation: fade-in-up 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
 }
@@ -468,14 +480,14 @@ body {
 }
 
 .btn-secondary {
-    background-color: transparent;
+    background-color: var(--btn-secondary-background);
     color: var(--foreground);
-    border-color: rgba(168, 181, 178, 0.3);
+    border: 1px solid var(--btn-secondary-border);
 }
 
 .btn-secondary:hover {
-    border-color: rgba(168, 181, 178, 0.5);
-    background-color: rgba(168, 181, 178, 0.05);
+    border-color: var(--btn-secondary-hover-border);
+    background-color: var(--btn-secondary-hover-background);
 }
 
 .hero-bg {

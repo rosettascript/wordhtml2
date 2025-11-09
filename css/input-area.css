@@ -239,7 +239,7 @@
     padding: var(--spacing-4);
     border: var(--border-width) solid rgba(168, 181, 178, 0.2);
     border-radius: var(--radius);
-    background-color: var(--card);
+    background-color: var(--background);
     color: var(--foreground);
     font-size: 0.875rem;
     line-height: 1.6;
@@ -284,7 +284,7 @@
 
 /* Force text color in dark mode and fix blurriness */
 [data-theme="dark"] .panel-editor,
-[data-theme="dark"] .panel-editor * {
+[data-theme="dark"] .panel-editor *:not(a) {
     color: var(--foreground) !important;
     -webkit-font-smoothing: auto;
     -moz-osx-font-smoothing: auto;
@@ -370,7 +370,56 @@
     overflow: visible !important;
 }
 
-.panel-editor strong { font-weight: bold; }
+.panel-editor strong,
+.panel-editor b {
+    font-weight: 600;
+    color: inherit;
+}
+
+.panel-editor span[style*="font-weight:bold"],
+.panel-editor span[style*="font-weight: bold"],
+.panel-editor span[style*="font-weight:700"],
+.panel-editor span[style*="font-weight: 700"],
+.panel-editor span[style*="font-weight:600"],
+.panel-editor span[style*="font-weight: 600"],
+.panel-editor span[style*="font-weight:bolder"],
+.panel-editor span[style*="font-weight: bolder"],
+.panel-editor span[style*="font-weight:heavy"],
+.panel-editor span[style*="font-weight: heavy"] {
+    font-weight: 600 !important;
+    color: inherit !important;
+}
+
+[data-theme="dark"] .panel-editor strong,
+[data-theme="dark"] .panel-editor b {
+    color: var(--foreground) !important;
+}
+
+.panel-editor a,
+.panel-editor a * {
+    color: #1a0dab !important;
+    text-decoration: underline;
+}
+
+.panel-editor a:hover,
+.panel-editor a:hover *,
+.panel-editor a:focus-visible,
+.panel-editor a:focus-visible * {
+    color: #551a8b !important;
+}
+
+[data-theme="dark"] .panel-editor a,
+[data-theme="dark"] .panel-editor a * {
+    color: #8ab4f8 !important;
+}
+
+[data-theme="dark"] .panel-editor a:hover,
+[data-theme="dark"] .panel-editor a:hover *,
+[data-theme="dark"] .panel-editor a:focus-visible,
+[data-theme="dark"] .panel-editor a:focus-visible * {
+    color: #aec6ff !important;
+}
+
 .panel-editor em { font-style: italic; }
 .panel-editor sup { vertical-align: super; font-size: 0.8em; }
 .panel-editor sub { vertical-align: sub; font-size: 0.8em; }
