@@ -6,10 +6,10 @@
     <title>WordHTML2 - Clean HTML Conversion Tool | Word to HTML Converter</title>
     <meta name="description" content="Transform Microsoft Word documents into clean, semantic HTML instantly. Professional conversion tool with custom CSS support, multiple output formats, and zero bloat.">
     <script>
-        // Prevent flash of light mode - must run before page renders
+        // Prevent flash of incorrect theme - must run before page renders
         (function() {
             const savedTheme = localStorage.getItem('wordhtml2-theme');
-            const theme = savedTheme || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            const theme = savedTheme || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
         })();
     </script>
@@ -43,6 +43,7 @@
             <nav class="header-nav">
                 <a href="#converter" class="nav-link">Converter</a>
                 <a href="#features" class="nav-link">Features</a>
+                <a href="#about-developer" class="nav-link">About</a>
                 <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
                     <svg class="icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="5"></circle>
@@ -64,27 +65,25 @@
     </header>
 
     <!-- Hero Section -->
-    <section class="hero">
+    <section id="hero" class="hero">
         <div class="hero-container">
             <div class="hero-content">
                 <div class="hero-badge">
                     <svg class="hero-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                     </svg>
-                    <span>Professional HTML Conversion</span>
+                    <span>Clean &amp; Secure HTML Conversion</span>
                 </div>
-                
+
                 <h2 class="hero-title">
                     Transform Word Documents<br>
-                    <span class="hero-title-accent">Into Clean HTML</span>
+                    <span class="hero-title-accent">Into Production-Ready HTML</span>
                 </h2>
-                
+
                 <p class="hero-description">
-                    A precision tool for converting Microsoft Word content into semantic, 
-                    well-structured HTML. Designed for developers, content creators, and digital publishers 
-                    who demand clean code without the markup bloat.
+                    WordHTML2 strips out Microsoft Word clutter, restores semantic structure, and keeps your formatting intact—built by Kim Galicia, a full-stack engineer and cybersecurity penetration specialist who obsesses over clean, secure publishing workflows.
                 </p>
-                
+
                 <div class="hero-cta">
                     <a href="#converter" class="btn btn-primary">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -93,7 +92,7 @@
                         </svg>
                         <span>Start Converting</span>
                     </a>
-                    
+
                     <a href="#features" class="btn btn-secondary">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <polyline points="16 18 22 12 16 6"></polyline>
@@ -111,6 +110,53 @@
             </div>
         </div>
     </section>
+
+    <!-- Floating Navigation -->
+    <nav id="floating-nav" class="floating-nav" aria-label="Section shortcuts">
+        <ul class="floating-nav-list">
+            <li>
+                <a href="#hero" aria-keyshortcuts="Alt+Shift+1" title="Go to Hero (Alt+Shift+1)">
+                    <svg class="floating-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                        <polygon points="12 2 14.47 8.26 21 9.27 16 14.14 17.18 21.02 12 17.77 6.82 21.02 8 14.14 3 9.27 9.53 8.26 12 2"></polygon>
+                    </svg>
+                    <span class="sr-only">Hero</span>
+                </a>
+            </li>
+            <li>
+                <a href="#converter" aria-keyshortcuts="Alt+Shift+2" title="Go to Converter (Alt+Shift+2)">
+                    <svg class="floating-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    <span class="sr-only">Converter</span>
+                </a>
+            </li>
+            <li>
+                <a href="#features" aria-keyshortcuts="Alt+Shift+3" title="Go to Features (Alt+Shift+3)">
+                    <svg class="floating-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                        <path d="M12 2v4"></path>
+                        <path d="M12 18v4"></path>
+                        <path d="M4.93 4.93l2.83 2.83"></path>
+                        <path d="M16.24 16.24l2.83 2.83"></path>
+                        <path d="M2 12h4"></path>
+                        <path d="M18 12h4"></path>
+                        <path d="M4.93 19.07l2.83-2.83"></path>
+                        <path d="M16.24 7.76l2.83-2.83"></path>
+                    </svg>
+                    <span class="sr-only">Features</span>
+                </a>
+            </li>
+            <li>
+                <a href="#about-developer" aria-keyshortcuts="Alt+Shift+4" title="Go to About (Alt+Shift+4)">
+                    <svg class="floating-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                        <circle cx="12" cy="8" r="4"></circle>
+                        <path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path>
+                    </svg>
+                    <span class="sr-only">About</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 
     <!-- Converter Section -->
     <section id="converter" class="converter">
@@ -354,8 +400,8 @@
                             <path d="M11 8a3 3 0 0 0-3 3"></path>
                         </svg>
                     </div>
-                    <h4 class="feature-title">Shopify Blog Ready</h4>
-                    <p class="feature-description">Specialized mode with H1 removal, list combining, and SOP formatting for Shopify stores</p>
+                    <h4 class="feature-title">Shopify-Optimized Output</h4>
+                    <p class="feature-description">Dedicated mode crafted by Kim Galicia to streamline spacing, polish markup, format key sections, and enforce Shopify-friendly link handling</p>
                 </div>
 
                 <div class="feature-card">
@@ -412,6 +458,50 @@
         </div>
     </section>
 
+    <!-- About Section -->
+    <section id="about-developer" class="features about-section">
+        <div class="features-container">
+            <div class="features-header">
+                <h3 class="features-title">About the Developer</h3>
+                <p class="features-description">
+                    Kim Galicia is a full-stack engineer and cybersecurity penetration specialist who helps Shopify teams ship polished, secure markup faster.
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 5a2 2 0 1 1-2 2 2 2 0 0 1 2-2zm0 14a7 7 0 0 1-4.9-2H16.9A7 7 0 0 1 12 21z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="feature-title">Security-Minded Craft</h4>
+                    <p class="feature-description">WordHTML2 distills years of workflow and security insights into a reliable conversion tool for content ops, marketing, and engineering teams.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <polyline points="4 4 10 4 12 8 20 8 20 20 4 20 4 4"></polyline>
+                            <line x1="12" y1="12" x2="12" y2="16"></line>
+                            <line x1="10" y1="14" x2="14" y2="14"></line>
+                        </svg>
+                    </div>
+                    <h4 class="feature-title">Let’s Connect</h4>
+                    <p class="feature-description">Reach out at <a href="mailto:rosettascript@gmail.com">rosettascript@gmail.com</a> for collaborations, workflow consultations, or secure conversion integrations.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                            <path d="M7 8h10M7 12h10M7 16h6"></path>
+                        </svg>
+                    </div>
+                    <h4 class="feature-title">Tooling & Contributions</h4>
+                    <p class="feature-description">From converters to security audits, Kim shares experiments and open-source snippets that help Shopify teams ship faster with confidence.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-container">
@@ -427,10 +517,14 @@
                     <p class="footer-logo-subtitle">Document Converter</p>
                 </div>
             </div>
-            
-            <p class="footer-text">
-                © <span id="current-year"></span> WordHTML2. All conversions happen client-side.
-            </p>
+            <div class="footer-info">
+                <p class="footer-text">
+                    © <span id="current-year"></span> WordHTML2. All conversions happen client-side.
+                </p>
+                <p class="footer-text">
+                    Developed by Kim Galicia · Full-Stack Engineer &amp; Cybersecurity Penetration Specialist · <a href="mailto:rosettascript@gmail.com">rosettascript@gmail.com</a>
+                </p>
+            </div>
         </div>
     </footer>
 

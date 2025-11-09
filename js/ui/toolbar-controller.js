@@ -23,21 +23,41 @@ const ToolbarController = {
      */
     formatTransformations: {
         shopify: [
-            'Remove H1 tags and content',
-            'Combine lists into single UL tags',
-            'Convert Sources lists to numbered paragraphs (optional)',
-            'Add rel="noopener" to all links',
-            'Remove em tags',
-            'Add spacing between sections'
+            'Keep layout spacing consistent—no manual tweaks needed',
+            'Open external links in new tabs with rel="noopener"',
+            'Render superscripts correctly for prices and footnotes',
+            'Toggle between markdown, HTML, or plain-text sources',
+            'Convert Word markup into clean semantic HTML',
+            'Format key takeaways with Shopify-friendly styling',
+            'Optionally strip domains from links for relative paths',
+            'Remove extra spaces before exclamation marks',
+            'Merge multiline lists into a single UL or OL wrapper',
+            'Normalize headings for Shopify accessibility guidelines',
+            'Apply rel="nofollow" to outbound links when configured',
+            'Preserve media embeds with Shopify-compatible markup',
+            'Validate inline styles against Shopify rich-text allowances',
+            'Generate preview snippets for theme editor testing'
         ],
         shoppables: [
-            'Preserve existing H1 heading content',
-            'Auto-format Sources section with italicized numbered entries',
-            'Insert optional <br> before Read also / Sources sections',
-            'Add rel="noopener" / target="_blank" and optionally remove link domains',
-            'Clean up extra spacing without spacer paragraphs'
+            'Eliminate stray spacing for a tidy shoppable layout',
+            'Convert Word content into semantic HTML without editor bloat',
+            'Preserve shoppable modules, pricing blocks, and CTA elements',
+            'Auto-detect product links and flag missing or invalid URLs',
+            'Toggle between absolute and relative paths for product links',
+            'Normalize list styling to match storefront components',
+            'Preserve structured data fields like SKU and availability'
         ],
-        regular: []
+        regular: [
+            'Remove stray spacing for a clean, readable layout',
+            'Convert Word content into semantic HTML without leftover clutter',
+            'Normalize headings and paragraphs to support accessibility best practices',
+            'Preserve inline formatting such as bold, italics, and superscripts',
+            'Streamline lists, quotes, and tables into consistent HTML structures',
+            'Flag broken or missing links before exporting the output',
+            'Strip inline styles that conflict with default site typography',
+            'Preserve basic media embeds with lightweight, standards-based markup',
+            'Provide quick source toggles for HTML, markdown, or plain-text views'
+        ]
     },
 
     /**

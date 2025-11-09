@@ -947,6 +947,162 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Section navigation shortcuts (Alt+Shift+Number)
+    const SECTION_SHORTCUTS = {
+        Digit1: '#hero',
+        Digit2: '#converter',
+        Digit3: '#features',
+        Digit4: '#about-developer',
+        Numpad1: '#hero',
+        Numpad2: '#converter',
+        Numpad3: '#features',
+        Numpad4: '#about-developer'
+    };
+
+    // Hide floating nav while hero is in view
+    const floatingNav = document.getElementById('floating-nav');
+    const heroSection = document.getElementById('hero');
+    const headerElement = document.querySelector('.header');
+    let navLinks = [];
+
+    const updateHistory = (selector) => {
+        if (!selector || typeof selector !== 'string') return;
+        const currentHash = window.location.hash;
+        if (currentHash === selector) return;
+        history.replaceState(null, '', selector);
+    };
+
+    const scrollToSectionElement = (section, selector) => {
+        if (!section) return;
+
+        if (section.id === 'hero') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            updateHistory('#hero');
+            return;
+        }
+
+        const headerOffset = headerElement ? headerElement.offsetHeight + 8 : 0;
+        const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+        const targetPosition = Math.max(sectionTop - headerOffset, 0);
+
+        window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+        });
+
+        if (selector) {
+            updateHistory(selector);
+        }
+    };
+
+    const scrollToSectionSelector = (selector) => {
+        if (!selector || typeof selector !== 'string') return;
+        const section = document.querySelector(selector);
+        scrollToSectionElement(section, selector);
+    };
+
+    const applyActiveNavLink = (selector) => {
+        navLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (!href) return;
+            link.classList.toggle('is-active', href === selector);
+        });
+    };
+
+    if (floatingNav && heroSection) {
+        navLinks = Array.from(floatingNav.querySelectorAll('a[href^="#"]'));
+
+        const updateFloatingNavVisibility = (isHeroVisible) => {
+        if (isHeroVisible) {
+                floatingNav.classList.add('is-hidden');
+            updateHistory('#hero');
+                applyActiveNavLink('#hero');
+            } else {
+                floatingNav.classList.remove('is-hidden');
+            }
+        };
+
+        const sections = [
+            { selector: '#hero', element: heroSection },
+            { selector: '#converter', element: document.getElementById('converter') },
+            { selector: '#features', element: document.getElementById('features') },
+            { selector: '#about-developer', element: document.getElementById('about-developer') }
+        ].filter(section => !!section.element);
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                const section = sections.find(sec => sec.element === entry.target);
+                if (!section) return;
+
+                if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+                    if (section.selector === '#hero') {
+                        updateFloatingNavVisibility(true);
+                    } else {
+                        updateFloatingNavVisibility(false);
+                        updateHistory(section.selector);
+                        applyActiveNavLink(section.selector);
+                    }
+                }
+            });
+        }, {
+            threshold: [0.51]
+        });
+
+        sections.forEach(section => observer.observe(section.element));
+
+        // Initialize visibility state
+        const heroRect = heroSection.getBoundingClientRect();
+        const heroVisible = heroRect.top < window.innerHeight && heroRect.bottom > 0;
+        updateFloatingNavVisibility(heroVisible);
+        applyActiveNavLink(heroVisible ? '#hero' : window.location.hash || '#hero');
+    }
+
+    if (floatingNav) {
+        if (!navLinks.length) {
+            navLinks = Array.from(floatingNav.querySelectorAll('a[href^="#"]'));
+        }
+        navLinks.forEach((link) => {
+            link.addEventListener('click', (event) => {
+                const href = link.getAttribute('href');
+                if (!href || !href.startsWith('#')) return;
+                event.preventDefault();
+                scrollToSectionSelector(href);
+            });
+        });
+    }
+
+    const isEditableTarget = (target) => {
+        if (!target) return false;
+        const tag = target.tagName;
+        return target.isContentEditable ||
+            tag === 'INPUT' ||
+            tag === 'TEXTAREA' ||
+            tag === 'SELECT';
+    };
+
+    document.addEventListener('keydown', (event) => {
+        if (!event.shiftKey || !event.altKey) {
+            return;
+        }
+
+        if (event.defaultPrevented) {
+            return;
+        }
+
+        const target = event.target;
+        if (isEditableTarget(target)) {
+            return;
+        }
+
+        const selector = SECTION_SHORTCUTS[event.code];
+        if (!selector) {
+            return;
+        }
+
+        event.preventDefault();
+        scrollToSectionSelector(selector);
+    });
+
     // Initial update
     updateEmptyStates();
     updateOutput();
