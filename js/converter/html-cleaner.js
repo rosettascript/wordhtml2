@@ -13,12 +13,12 @@ const HtmlCleaner = {
     clean(html) {
         if (!html) return '';
 
-        console.log('🧹 HtmlCleaner.clean() called - Starting cleaning pipeline');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('🧹 HtmlCleaner.clean() called - Starting cleaning pipeline');
         
         // Step 0: Pre-clean MSO tags using string replacement (before parsing)
         // This removes invalid tags that the browser parser would "correct"
         let preCleaned = this.removeMSOTags(html);
-        console.log('✅ Step 0: Pre-removed MSO tags (string-based)');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 0: Pre-removed MSO tags (string-based)');
 
         // Step 1: Parse once into DOM - this is our source of truth for order
         const container = HtmlParser.parseHTML(preCleaned);
@@ -34,7 +34,7 @@ const HtmlCleaner = {
             }
             container.innerHTML = '';
             container.appendChild(fragment);
-            console.log('✅ Step 1.5: Unwrapped document-level strong wrapper');
+            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 1.5: Unwrapped document-level strong wrapper');
         }
         
         // Debug: Log original order
@@ -43,56 +43,56 @@ const HtmlCleaner = {
             tag: el.tagName,
             text: el.textContent.substring(0, 30).replace(/\s+/g, ' ')
         }));
-        console.log('📋 Original DOM order:', originalOrder);
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('📋 Original DOM order:', originalOrder);
 
         // Step 2: Convert spans with styles to semantic tags FIRST (before removing styles!)
         // This is critical - we need style attributes to detect italic/bold
         this.convertSpansToSemanticDOM(container);
-        console.log('✅ Step 2: Converted spans to semantic tags');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 2: Converted spans to semantic tags');
 
         // Step 3: Remove Word-specific attributes (mutate in place)
         // Now we can safely remove style attributes since we've converted them to semantic tags
         this.removeWordAttributes(container);
-        console.log('✅ Step 3: Removed Word attributes');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 3: Removed Word attributes');
 
         // Step 4: Remove meaningless spans and fonts (mutate in place)
         this.removeSpanWrappersDOM(container);
-        console.log('✅ Step 4: Removed span/font wrappers');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 4: Removed span/font wrappers');
 
         // Step 5: Normalize tags (<b> → <strong>, <i> → <em>) - mutate in place
         this.normalizeTagsDOM(container);
-        console.log('✅ Step 5: Normalized tags');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 5: Normalized tags');
 
         // Step 6: Remove empty semantic tags (mutate in place)
         this.removeEmptySemanticTags(container);
-        console.log('✅ Step 6: Removed empty semantic tags');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 6: Removed empty semantic tags');
 
         // Step 7: Unwrap invalid inline wrappers (mutate in place)
         this.unwrapBlockWrappingInlineTags(container);
-        console.log('✅ Step 7: Unwrapped invalid wrappers');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 7: Unwrapped invalid wrappers');
         
         // Step 7.5: Fix strong tags wrapping block elements (mutate in place)
         this.fixStrongWrappingBlocks(container);
-        console.log('✅ Step 7.5: Fixed strong tags wrapping blocks');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 7.5: Fixed strong tags wrapping blocks');
         
         // Step 7.6: Remove redundant <strong> inside headings (headings are already bold)
         this.removeStrongInsideHeadings(container);
-        console.log('✅ Step 7.6: Removed redundant strong inside headings');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 7.6: Removed redundant strong inside headings');
 
         // Step 7.7: Normalize whitespace in anchor tags (mutate in place)
         this.normalizeAnchorWhitespace(container);
-        console.log('✅ Step 7.7: Normalized anchor tag whitespace');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 7.7: Normalized anchor tag whitespace');
 
         // Step 7.8: Normalize spacing before punctuation (mutate in place)
         this.normalizePunctuationSpacing(container);
-        console.log('✅ Step 7.8: Normalized punctuation spacing');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 7.8: Normalized punctuation spacing');
 
         // Step 8: Check and fix reversed document order (if needed)
         const fixedContainer = this.fixReversedDocumentOrderDOM(container);
         
         // Step 9: Final cleanup (empty lists, paragraphs, etc.) - mutate in place
         this.cleanStructureDOM(fixedContainer);
-        console.log('✅ Step 9: Final structure cleanup');
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Step 9: Final structure cleanup');
         
         // Step 10: Get HTML preserving order - use getOrderedHTML to ensure proper order
         let cleaned = this.getOrderedHTML(fixedContainer);
@@ -110,8 +110,8 @@ const HtmlCleaner = {
             tag: el.tagName,
             text: el.textContent.substring(0, 30).replace(/\s+/g, ' ')
         }));
-        console.log('📋 Final DOM order:', finalOrder);
-        console.log('✅ HtmlCleaner.clean() complete - Output length:', cleaned.length);
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('📋 Final DOM order:', finalOrder);
+        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ HtmlCleaner.clean() complete - Output length:', cleaned.length);
 
         return cleaned;
     },
@@ -135,7 +135,7 @@ const HtmlCleaner = {
             if (shouldPreserveLayoutStyles && el.hasAttribute('style')) {
                 const originalStyle = el.getAttribute('style');
                 if (originalStyle && (originalStyle.includes('margin') || originalStyle.includes('padding') || originalStyle.includes('border'))) {
-                    console.log(`🔍 Processing ${el.tagName.toLowerCase()} with style:`, originalStyle);
+                    if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log(`🔍 Processing ${el.tagName.toLowerCase()} with style:`, originalStyle);
                 }
             }
             
@@ -171,7 +171,7 @@ const HtmlCleaner = {
                                     // Preserve the original declaration format (with original spacing/casing)
                                     preservedStyles.push(declaration);
                                     if (window.DEBUG_HTML_CLEANER) {
-                                        console.log(`✅ Preserving ${property} style for ${el.tagName.toLowerCase()}:`, declaration);
+                                        if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log(`✅ Preserving ${property} style for ${el.tagName.toLowerCase()}:`, declaration);
                                     }
                                     return; // Skip to next declaration
                                 }
@@ -206,7 +206,7 @@ const HtmlCleaner = {
                             
                             // Debug: Log preserved styles for divs/tables
                             if (shouldPreserveLayoutStyles && window.DEBUG_HTML_CLEANER) {
-                                console.log(`✅ ${el.tagName} style preserved: "${finalStyle}" (from original: "${styleValue}")`);
+                                if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log(`✅ ${el.tagName} style preserved: "${finalStyle}" (from original: "${styleValue}")`);
                             }
                         } else {
                             // No preserved styles, remove the style attribute entirely
@@ -214,7 +214,7 @@ const HtmlCleaner = {
                             
                             // Debug: Log when style is removed from div/table
                             if (shouldPreserveLayoutStyles && window.DEBUG_HTML_CLEANER) {
-                                console.log(`⚠️ ${el.tagName} style removed (no border/padding/margin found): "${styleValue}"`);
+                                if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log(`⚠️ ${el.tagName} style removed (no border/padding/margin found): "${styleValue}"`);
                             }
                         }
                     } else {
@@ -471,17 +471,17 @@ const HtmlCleaner = {
         
         if (h1Index === children.length - 1 && contentBeforeH1 >= 5) {
             shouldReverse = true;
-            console.log('🔄 Detected reversed order: H1 is last element with substantial content before it');
+            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('🔄 Detected reversed order: H1 is last element with substantial content before it');
         } else if (isNearEnd && hasLowerHeadingsBefore) {
             shouldReverse = true;
-            console.log('🔄 Detected reversed order: H1 near end with lower headings before it');
+            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('🔄 Detected reversed order: H1 near end with lower headings before it');
         } else if (isNearEnd && contentBeforeH1 > Math.max(children.length * 0.3, 10)) {
             shouldReverse = true;
-            console.log('🔄 Detected reversed order: H1 near end with substantial content before it');
+            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('🔄 Detected reversed order: H1 near end with substantial content before it');
         }
         
         if (shouldReverse) {
-            console.log(`🔄 Reversing document order (H1 at index ${h1Index} of ${children.length})`);
+            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log(`🔄 Reversing document order (H1 at index ${h1Index} of ${children.length})`);
             // Create a new container with reversed children
             const newContainer = document.createElement('div');
             const reversed = [...children].reverse();
@@ -1119,8 +1119,8 @@ const HtmlCleaner = {
                             // If H1 is near the end and we have lower headings before it, reverse
                             if (h1Index !== -1 && h1Index > checkChildren.length / 2 && 
                                 ((h2Index !== -1 && h2Index < h1Index) || (h3Index !== -1 && h3Index < h1Index))) {
-                                console.log('🔄 Content inside <b> wrapper appears reversed - fixing order...');
-                                console.log('  H1 index:', h1Index, 'of', checkChildren.length, 'children');
+                                if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('🔄 Content inside <b> wrapper appears reversed - fixing order...');
+                                if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('  H1 index:', h1Index, 'of', checkChildren.length, 'children');
                                 // Reverse the content
                                 const reversed = checkChildren.reverse();
                                 tempCheck.innerHTML = '';
@@ -1128,11 +1128,11 @@ const HtmlCleaner = {
                                     tempCheck.appendChild(child);
                                 });
                                 bContent = tempCheck.innerHTML;
-                                console.log('✅ Reversed content inside <b> wrapper');
+                                if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('✅ Reversed content inside <b> wrapper');
                             }
                             
                             unwrappedHTML = beforeB + bContent + afterB;
-                            console.log('📦 Unwrapped <b> wrapper');
+                            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('📦 Unwrapped <b> wrapper');
                         }
                         break;
                     }
@@ -1428,26 +1428,26 @@ const HtmlCleaner = {
         // Case 1: H1 is the very last element and there's substantial content before it
         if (h1Index === children.length - 1 && contentBeforeH1 >= 5) {
             shouldReverse = true;
-            console.log('🔄 Detected reversed order: H1 is last element with substantial content before it');
+            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('🔄 Detected reversed order: H1 is last element with substantial content before it');
         }
         // Case 2: H1 is near the end (last 10%) and there are lower headings before it
         else if (isNearEnd && hasLowerHeadingsBefore) {
             shouldReverse = true;
-            console.log('🔄 Detected reversed order: H1 near end with lower headings before it');
+            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('🔄 Detected reversed order: H1 near end with lower headings before it');
         }
         // Case 3: H1 is near the end and there's a lot of content before it (more than 30% of total)
         else if (isNearEnd && contentBeforeH1 > Math.max(children.length * 0.3, 10)) {
             shouldReverse = true;
-            console.log('🔄 Detected reversed order: H1 near end with substantial content before it');
+            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('🔄 Detected reversed order: H1 near end with substantial content before it');
         }
         // Case 4: H1 is after the midpoint and there are lower headings before it
         else if (h1Index > children.length / 2 && hasLowerHeadingsBefore && contentBeforeH1 > 5) {
             shouldReverse = true;
-            console.log('🔄 Detected reversed order: H1 after midpoint with lower headings and content before it');
+            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('🔄 Detected reversed order: H1 after midpoint with lower headings and content before it');
         }
         
         if (shouldReverse) {
-            console.log(`🔄 Reversing document order (H1 at index ${h1Index} of ${children.length}, ${contentBeforeH1} content elements before it)`);
+            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log(`🔄 Reversing document order (H1 at index ${h1Index} of ${children.length}, ${contentBeforeH1} content elements before it)`);
             // Reverse the children array
             const reversed = [...children].reverse(); // Use spread to avoid mutating original
             tempDiv.innerHTML = '';
@@ -1589,7 +1589,7 @@ const HtmlCleaner = {
                         if (beforeB.trim().length < 50 && afterB.trim().length < 50 && bContent.length > 100) {
                             // This is a wrapper - extract its content (preserves source order)
                             unwrappedHTML = beforeB + bContent + afterB;
-                            console.log('📦 Unwrapped <b> wrapper using string matching (preserves source order)');
+                            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('📦 Unwrapped <b> wrapper using string matching (preserves source order)');
                         }
                         break;
                     }
@@ -1751,7 +1751,7 @@ const HtmlCleaner = {
                 tag: el.tagName,
                 text: el.textContent.substring(0, 30).replace(/\s+/g, ' ')
             }));
-            console.log('  📋 getOrderedHTML - Children order:', order);
+            if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log('  📋 getOrderedHTML - Children order:', order);
         }
         
         // If no children elements, check for text nodes
@@ -1772,7 +1772,7 @@ const HtmlCleaner = {
             // Process all element children in order
             children.forEach((child, idx) => {
                 if (window.DEBUG_HTML_CLEANER) {
-                    console.log(`  📋 Processing child ${idx}:`, child.tagName, child.textContent.substring(0, 30));
+                    if (typeof window !== 'undefined' && window.DEBUG_HTML_CLEANER) console.log(`  📋 Processing child ${idx}:`, child.tagName, child.textContent.substring(0, 30));
                 }
                 elements.push(child.outerHTML);
             });

@@ -19,9 +19,9 @@ const HtmlConverter = {
             tag: el.tagName,
             text: el.textContent.substring(0, 50).replace(/\s+/g, ' ')
         }));
-        console.group('🔍 HTML Conversion Debug');
-        console.log('📥 INPUT ORDER:', inputOrder);
-        console.log('📥 INPUT HTML (first 500 chars):', wordHTML.substring(0, 500));
+        if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER) && console.group) console.group('🔍 HTML Conversion Debug');
+        if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.log('📥 INPUT ORDER:', inputOrder);
+        if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.log('📥 INPUT HTML (first 500 chars):', wordHTML.substring(0, 500));
 
         // Clean the HTML (this now handles MSO removal, semantic conversion, etc.)
         let cleaned = HtmlCleaner.clean(wordHTML);
@@ -33,7 +33,7 @@ const HtmlConverter = {
             tag: el.tagName,
             text: el.textContent.substring(0, 50).replace(/\s+/g, ' ')
         }));
-        console.log('🧹 AFTER CLEAN ORDER:', afterCleanOrder);
+        if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.log('🧹 AFTER CLEAN ORDER:', afterCleanOrder);
         
         // Final cleanup (spacing, empty lists, etc.)
         cleaned = this.finalCleanup(cleaned);
@@ -45,8 +45,8 @@ const HtmlConverter = {
             tag: el.tagName,
             text: el.textContent.substring(0, 50).replace(/\s+/g, ' ')
         }));
-        console.log('✅ FINAL ORDER:', finalOrder);
-        console.log('✅ FINAL HTML (first 500 chars):', cleaned.substring(0, 500));
+        if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.log('✅ FINAL ORDER:', finalOrder);
+        if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.log('✅ FINAL HTML (first 500 chars):', cleaned.substring(0, 500));
         
         // Compare first and last elements
         if (inputOrder.length > 0 && finalOrder.length > 0) {
@@ -55,18 +55,18 @@ const HtmlConverter = {
             const finalFirst = finalOrder[0];
             const finalLast = finalOrder[finalOrder.length - 1];
             
-            console.log('🔍 ORDER COMPARISON:');
-            console.log('  Input First:', inputFirst);
-            console.log('  Final First:', finalFirst);
-            console.log('  Input Last:', inputLast);
-            console.log('  Final Last:', finalLast);
+            if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.log('🔍 ORDER COMPARISON:');
+            if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.log('  Input First:', inputFirst);
+            if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.log('  Final First:', finalFirst);
+            if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.log('  Input Last:', inputLast);
+            if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.log('  Final Last:', finalLast);
             
             if (inputFirst.tag === finalLast.tag && inputLast.tag === finalFirst.tag) {
-                console.warn('⚠️ ORDER APPEARS REVERSED!');
+                if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.warn('⚠️ ORDER APPEARS REVERSED!');
             }
         }
         
-        console.groupEnd();
+        if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER) && console.groupEnd) console.groupEnd();
 
         return cleaned;
     },
@@ -94,13 +94,13 @@ const HtmlConverter = {
                 tag: el.tagName,
                 text: el.textContent.substring(0, 30).replace(/\s+/g, ' ')
             }));
-            console.log('  📋 HtmlConverter.getOrderedHTML - Children order:', order);
+            if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.log('  📋 HtmlConverter.getOrderedHTML - Children order:', order);
         }
         
         if (children.length > 0) {
             children.forEach((child, idx) => {
                 if (window.DEBUG_HTML_CLEANER) {
-                    console.log(`  📋 Processing child ${idx}:`, child.tagName, child.textContent.substring(0, 30));
+                    if (typeof window !== 'undefined' && (window.DEBUG_HTML_CONVERTER || window.DEBUG_HTML_CLEANER)) console.log(`  📋 Processing child ${idx}:`, child.tagName, child.textContent.substring(0, 30));
                 }
                 elements.push(child.outerHTML);
             });
