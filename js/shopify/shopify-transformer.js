@@ -55,7 +55,7 @@ const ShopifyTransformer = {
             result = this.removeExtraSpacing(result);
         }
 
-        return result;
+        return HtmlCleaner.removeSpaceBeforePunctuationHTML(result);
     },
 
     /**
@@ -76,7 +76,7 @@ const ShopifyTransformer = {
             result = this.removeExtraSpacing(result);
         }
         
-        return result;
+        return HtmlCleaner.removeSpaceBeforePunctuationHTML(result);
     },
 
     /**

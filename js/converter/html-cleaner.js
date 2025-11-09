@@ -83,6 +83,10 @@ const HtmlCleaner = {
         this.normalizeAnchorWhitespace(container);
         console.log('✅ Step 7.7: Normalized anchor tag whitespace');
 
+        // Step 7.8: Normalize spacing before punctuation (mutate in place)
+        this.normalizePunctuationSpacing(container);
+        console.log('✅ Step 7.8: Normalized punctuation spacing');
+
         // Step 8: Check and fix reversed document order (if needed)
         const fixedContainer = this.fixReversedDocumentOrderDOM(container);
         
@@ -95,6 +99,9 @@ const HtmlCleaner = {
         
         // Step 11: Format HTML with line breaks for readability
         cleaned = this.formatHTML(cleaned);
+
+        // Step 12: Remove stray spaces before punctuation in final HTML string
+        cleaned = this.removeSpaceBeforePunctuationHTML(cleaned);
         
         // Debug: Log final order
         const finalDiv = HtmlParser.parseHTML(cleaned);
@@ -612,7 +619,10 @@ const HtmlCleaner = {
             if (hasOnlyText) {
                 // Simple case: anchor contains only text, normalize the entire text content
                 const text = anchor.textContent || anchor.innerText || '';
-                const normalized = text.trim().replace(/\s+/g, ' ');
+                const normalized = text
+                    .trim()
+                    .replace(/\s+/g, ' ')
+                    .replace(/\s+([.,!?;:])/g, '$1');
                 anchor.textContent = normalized;
             } else {
                 // Anchor has nested elements (like <strong>, <em>), normalize text nodes individually
@@ -647,8 +657,58 @@ const HtmlCleaner = {
                     // Collapse multiple spaces to single space
                     text = text.replace(/\s+/g, ' ');
                     
-                    textNode.textContent = text;
+                    textNode.textContent = text.replace(/\s+([.,!?;:])/g, '$1');
                 });
+            }
+        });
+    },
+
+    /**
+     * Normalize spaces that appear immediately before punctuation marks
+     * Converts patterns like "word ." to "word." and handles non-breaking spaces
+     * @param {HTMLElement} container - Container element
+     */
+    normalizePunctuationSpacing(container) {
+        const punctuationRegex = /(\S)[\s\u00A0]+([.,!?;:])/g;
+        const punctuationStartRegex = /^[\s\u00A0]*([.,!?;:])/;
+        const walker = document.createTreeWalker(
+            container,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+
+        const textNodes = [];
+        let node;
+        while ((node = walker.nextNode())) {
+            textNodes.push(node);
+        }
+
+        textNodes.forEach((textNode, index) => {
+            const original = textNode.textContent;
+            let normalized = original.replace(punctuationRegex, '$1$2');
+
+            const nextNode = textNodes[index + 1];
+            if (nextNode) {
+                const nextText = nextNode.textContent;
+                if (punctuationStartRegex.test(nextText)) {
+                    const trimmedCurrent = normalized.replace(/[\s\u00A0]+$/g, '');
+                    if (trimmedCurrent !== normalized) {
+                        normalized = trimmedCurrent;
+                    }
+
+                    const adjustedNext = nextText.replace(/^[\s\u00A0]*([.,!?;:])/, '$1');
+                    if (adjustedNext !== nextText) {
+                        nextNode.textContent = adjustedNext;
+                    }
+                }
+            }
+
+            normalized = normalized.replace(/^[\s\u00A0]+([.,!?;:])/g, '$1');
+            normalized = normalized.replace(/[\s\u00A0]+([.,!?;:])/g, '$1');
+
+            if (normalized !== original) {
+                textNode.textContent = normalized;
             }
         });
     },
@@ -1654,6 +1714,24 @@ const HtmlCleaner = {
         formatted = formatted.trim();
         
         return formatted;
+    },
+
+    /**
+     * Remove extra spaces before punctuation in the final HTML string
+     * Handles cases like "</a> ." or "word ." that may persist after DOM cleanup
+     * @param {string} html - HTML string
+     * @returns {string} - HTML without spaces before punctuation
+     */
+    removeSpaceBeforePunctuationHTML(html) {
+        if (!html) return html;
+
+        return html
+            // Remove spaces (including nbsp) between non-space chars and punctuation
+            .replace(/(\S)(?:\s|&nbsp;|&#160;)+([.,!?;:])/gi, '$1$2')
+            // Remove spaces between closing tags and punctuation (e.g., </a> .)
+            .replace(/>\s+([.,!?;:])/g, '>$1')
+            // Remove standalone &nbsp; (or numeric equivalent) before punctuation
+            .replace(/(&nbsp;|&#160;)+([.,!?;:])/gi, '$2');
     },
 
     /**

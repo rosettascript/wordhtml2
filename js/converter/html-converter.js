@@ -314,21 +314,40 @@ const HtmlConverter = {
      */
     fixLinkSpacing(container) {
         const links = container.querySelectorAll('a');
+        const punctuationRegex = /^[.,!?;:]/;
         links.forEach(link => {
             const parent = link.parentNode;
+            if (!parent) return;
+
             const prevSibling = link.previousSibling;
             const nextSibling = link.nextSibling;
-            
-            // Add space before link if it's directly after text
-            if (prevSibling && prevSibling.nodeType === 3 && !prevSibling.textContent.endsWith(' ')) {
-                const space = document.createTextNode(' ');
-                parent.insertBefore(space, link);
+
+            // Add space before link if previous text doesn't already end with space
+            // Skip when the previous text already provides proper punctuation spacing
+            if (prevSibling && prevSibling.nodeType === 3) {
+                const prevText = prevSibling.textContent;
+                if (prevText && !prevText.endsWith(' ')) {
+                    const lastChar = prevText.slice(-1);
+                    if (!punctuationRegex.test(lastChar)) {
+                        parent.insertBefore(document.createTextNode(' '), link);
+                    }
+                }
             }
-            
-            // Add space after link if it's directly before text
-            if (nextSibling && nextSibling.nodeType === 3 && !nextSibling.textContent.startsWith(' ')) {
-                const space = document.createTextNode(' ');
-                parent.insertBefore(space, link.nextSibling);
+
+            // Ensure we don't insert spaces before punctuation
+            if (nextSibling && nextSibling.nodeType === 3) {
+                const nextText = nextSibling.textContent;
+                if (nextText) {
+                    if (punctuationRegex.test(nextText.trim())) {
+                        // Remove any existing leading spaces before punctuation
+                        const trimmed = nextText.replace(/^\s+/, '');
+                        if (trimmed !== nextText) {
+                            nextSibling.textContent = trimmed;
+                        }
+                    } else if (!nextText.startsWith(' ')) {
+                        parent.insertBefore(document.createTextNode(' '), link.nextSibling);
+                    }
+                }
             }
         });
     }

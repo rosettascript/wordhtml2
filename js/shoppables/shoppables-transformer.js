@@ -44,7 +44,7 @@ const ShoppablesTransformer = {
         // Always remove spacer paragraphs for Shoppables
         result = ShopifyTransformer.removeExtraSpacing(result);
 
-        return result;
+        return HtmlCleaner.removeSpaceBeforePunctuationHTML(result);
     },
 
     /**
