@@ -42,6 +42,79 @@ document.addEventListener('DOMContentLoaded', () => {
     let savedShopifyOptions = null;
     let savedShoppablesOptions = null;
 
+    const BLOCK_ELEMENT_TAGS = new Set([
+        'ADDRESS', 'ARTICLE', 'ASIDE', 'BLOCKQUOTE', 'DIV', 'DL', 'FIELDSET',
+        'FIGCAPTION', 'FIGURE', 'FOOTER', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5',
+        'H6', 'HEADER', 'HR', 'LI', 'MAIN', 'NAV', 'OL', 'P', 'PRE', 'SECTION',
+        'TABLE', 'UL'
+    ]);
+
+    const copyBasicAttributes = (source, target) => {
+        if (!source || !target) return;
+        const attrsToCopy = ['style', 'class', 'dir', 'lang'];
+        attrsToCopy.forEach(attr => {
+            const value = source.getAttribute(attr);
+            if (value) {
+                target.setAttribute(attr, value);
+            }
+        });
+    };
+
+    const shouldTreatDivAsParagraph = (div) => {
+        if (!div || div.tagName !== 'DIV') return false;
+
+        const hasBlockChildren = Array.from(div.children || []).some(child =>
+            BLOCK_ELEMENT_TAGS.has(child.tagName)
+        );
+
+        if (hasBlockChildren) {
+            return false;
+        }
+
+        const textContent = (div.textContent || '')
+            .replace(/\u200B/g, '')
+            .replace(/\u00A0/g, ' ')
+            .trim();
+
+        return textContent.length > 0;
+    };
+
+    const createParagraphElement = (sourceNode, htmlContent = null) => {
+        const paragraph = document.createElement('p');
+
+        if (htmlContent !== null && htmlContent !== undefined) {
+            paragraph.innerHTML = htmlContent;
+        } else if (sourceNode) {
+            while (sourceNode.firstChild) {
+                paragraph.appendChild(sourceNode.firstChild);
+            }
+        }
+
+        if (sourceNode) {
+            copyBasicAttributes(sourceNode, paragraph);
+        }
+
+        return paragraph;
+    };
+
+    const createParagraphHTML = (htmlContent, sourceNode) => {
+        const paragraph = createParagraphElement(sourceNode, htmlContent);
+        return paragraph.outerHTML;
+    };
+
+    const normalizeInputEditorStructure = () => {
+        if (!inputEditor) return;
+        const nodes = Array.from(inputEditor.childNodes || []);
+        nodes.forEach(node => {
+            if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'DIV') {
+                if (shouldTreatDivAsParagraph(node)) {
+                    const paragraph = createParagraphElement(node);
+                    inputEditor.replaceChild(paragraph, node);
+                }
+            }
+        });
+    };
+
     // Dark mode functions
     function getThemePreference() {
         // Check localStorage first
@@ -527,7 +600,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Listen for input changes
     if (inputEditor) {
+        const handleEditorFocus = () => {
+            inputEditor.classList.add('is-focused');
+            if (inputEmptyState) {
+                inputEmptyState.classList.add('hidden');
+            }
+        };
+
+        const handleEditorBlur = () => {
+            inputEditor.classList.remove('is-focused');
+            updateEmptyStates();
+        };
+
+        inputEditor.addEventListener('focus', handleEditorFocus);
+        inputEditor.addEventListener('blur', handleEditorBlur);
+
         inputEditor.addEventListener('input', () => {
+            normalizeInputEditorStructure();
             updateEmptyStates();
             updateOutput();
             // Update colors after input in case new content was added
@@ -539,6 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         inputEditor.addEventListener('paste', () => {
             setTimeout(() => {
+                normalizeInputEditorStructure();
                 updateEmptyStates();
                 updateOutput();
                 // Update colors after paste to handle Word's inline styles
@@ -727,6 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * Update output based on current input and settings
      */
     function updateOutput() {
+        normalizeInputEditorStructure();
         // Get HTML in document order from contenteditable
         const editorIsEmpty = isInputEffectivelyEmpty(inputEditor);
         const inputHTML = editorIsEmpty ? '' : getOrderedContent(inputEditor);
@@ -824,8 +915,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Walk through all child nodes (including text nodes between elements)
         while (node) {
             if (node.nodeType === 1) { // Element node (P, H1, UL, etc.)
-                // For paragraphs, check if they contain line breaks and split them
-                if (node.tagName === 'P') {
+                const tagName = node.tagName;
+                const isParagraphTag = tagName === 'P';
+                const isDivParagraph = shouldTreatDivAsParagraph(node);
+
+                if (isParagraphTag || isDivParagraph) {
                     const paraText = node.textContent;
                     // If paragraph contains newlines or <br>, split into separate paragraphs
                     if (paraText.includes('\n') || node.querySelectorAll('br').length > 0) {
@@ -839,14 +933,19 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (trimmed) {
                                 // Create a new paragraph for each line
                                 // Use innerHTML to preserve inline formatting like <em>, <strong>
-                                const p = document.createElement('p');
-                                p.innerHTML = trimmed;
-                                elements.push(p.outerHTML);
+                                elements.push(createParagraphHTML(trimmed, node));
                             }
                         });
                     } else {
-                        // No line breaks - just use the paragraph as-is (preserves all formatting)
-                        elements.push(node.outerHTML);
+                        if (isParagraphTag) {
+                            // No line breaks - just use the paragraph as-is (preserves all formatting)
+                            elements.push(node.outerHTML);
+                        } else {
+                            const trimmed = node.innerHTML.trim();
+                            if (trimmed) {
+                                elements.push(createParagraphHTML(trimmed, node));
+                            }
+                        }
                     }
                 } else {
                     // Get the outerHTML to preserve the element and its contents
