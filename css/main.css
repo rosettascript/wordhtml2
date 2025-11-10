@@ -122,6 +122,26 @@ body {
     text-rendering: optimizeLegibility;
 }
 
+a {
+    color: #1a0dab;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+a:hover,
+a:focus-visible {
+    color: #551a8b;
+}
+
+[data-theme="dark"] a {
+    color: #8ab4f8;
+}
+
+[data-theme="dark"] a:hover,
+[data-theme="dark"] a:focus-visible {
+    color: #aec6ff;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
