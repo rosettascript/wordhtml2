@@ -496,43 +496,53 @@ const ShopifyTransformer = {
                         const listItems = current.querySelectorAll('li');
                         
                         if (listItems.length > 0) {
-                            let number = 0;
                             if (disableSources) {
-                                listItems.forEach((li) => {
+                                listItems.forEach(li => {
                                     this.removeBrFromListItem(li);
-                                    number += 1;
                                     const originalHTML = li.innerHTML.trim();
-                                    if (!originalHTML) return;
-                                    if (!/^<em[\s>]/i.test(originalHTML) || !/<\/em>\s*$/i.test(originalHTML)) {
-                                        li.innerHTML = `<em>${originalHTML}</em>`;
+                                    if (!originalHTML) {
+                                        li.remove();
+                                        return;
                                     }
+
+                                    // Apply italic styling directly to list item
+                                    if (li.style) {
+                                        li.style.fontStyle = 'italic';
+                                    } else {
+                                        li.setAttribute('style', 'font-style: italic;');
+                                    }
+
+                            if (!/^<em[\s>]/i.test(originalHTML) || !/<\/em>\s*$/i.test(originalHTML)) {
+                                li.innerHTML = `<em>${originalHTML}</em>`;
+                            }
                                 });
+
                                 this.removeBrFromList(current);
-                                number = this.appendTrailingSourcesToList(current, number);
+                                let number = listItems.length;
+                                number = this.appendTrailingSourcesToList(current, number, { italicizeListItem: true });
                                 this.removeTrailingBrNodes(current);
                                 break;
+                            } else {
+                                let number = 0;
+                                listItems.forEach((li, index) => {
+                                    this.removeBrFromListItem(li);
+                                    number = index + 1;
+                                    const itemHTML = li.innerHTML.trim();
+                                    if (!itemHTML) {
+                                        li.remove();
+                                        return;
+                                    }
+
+                                    const paragraph = document.createElement('p');
+                                    paragraph.innerHTML = `<em>${number}. ${itemHTML}</em>`;
+                                    current.parentNode.insertBefore(paragraph, current);
+                                });
+
+                                number = this.processTrailingSourceNodes(current, number);
+                                this.removeTrailingBrNodes(current);
+                                current.remove();
+                                break;
                             }
-
-                            // Convert list items to numbered paragraphs
-                            listItems.forEach((li, index) => {
-                                this.removeBrFromListItem(li);
-                                number = index + 1;
-                                const itemHTML = li.innerHTML.trim();
-
-                                // Create numbered paragraph with italic
-                                const paragraph = document.createElement('p');
-                                paragraph.innerHTML = `<em>${number}. ${itemHTML}</em>`;
-                                
-                                // Insert before the list
-                                current.parentNode.insertBefore(paragraph, current);
-                            });
-
-                            // Handle trailing nodes (text or br) after the list as additional sources
-                            number = this.processTrailingSourceNodes(current, number);
-                            
-                            // Remove the original list
-                            current.remove();
-                            break;
                         }
                     }
                     
@@ -597,7 +607,8 @@ const ShopifyTransformer = {
      * @param {number} currentNumber - Current count of sources processed
      * @returns {number} - Updated count after appending nodes
      */
-    appendTrailingSourcesToList(listNode, currentNumber = 0) {
+    appendTrailingSourcesToList(listNode, currentNumber = 0, options = {}) {
+        const italicizeListItem = !!options.italicizeListItem;
         if (!listNode || !listNode.parentNode) return currentNumber;
         const parent = listNode.parentNode;
         const nodesToProcess = [];
@@ -678,12 +689,21 @@ const ShopifyTransformer = {
             });
 
             this.removeBrFromListItem(li);
-            if (!/^<em[\s>]/i.test(li.innerHTML) || !/<\/em>\s*$/i.test(li.innerHTML)) {
-                const inner = li.innerHTML.trim();
-                li.innerHTML = `<em>${inner}</em>`;
-            }
 
-            listNode.appendChild(li);
+            if (italicizeListItem) {
+                li.style.fontStyle = 'italic';
+                const originalHTML = li.innerHTML.trim();
+                if (!/^<em[\s>]/i.test(originalHTML) || !/<\/em>\s*$/i.test(originalHTML)) {
+                    li.innerHTML = `<em>${originalHTML}</em>`;
+                }
+                listNode.appendChild(li);
+            } else {
+                if (!/^<em[\s>]/i.test(li.innerHTML) || !/<\/em>\s*$/i.test(li.innerHTML)) {
+                    const inner = li.innerHTML.trim();
+                    li.innerHTML = `<em>${inner}</em>`;
+                }
+                listNode.appendChild(li);
+            }
             currentNumber += 1;
         });
 

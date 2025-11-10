@@ -81,27 +81,45 @@ const ShoppablesTransformer = {
 
                     if (disableSources) {
                         listItems.forEach(li => {
+                            ShopifyTransformer.removeBrFromListItem(li);
                             const originalHTML = li.innerHTML.trim();
-                            if (!originalHTML) return;
+                            if (!originalHTML) {
+                                li.remove();
+                                return;
+                            }
+                            if (li.style) {
+                                li.style.fontStyle = 'italic';
+                            } else {
+                                li.setAttribute('style', 'font-style: italic;');
+                            }
                             if (!/^<em[\s>]/i.test(originalHTML) || !/<\/em>\s*$/i.test(originalHTML)) {
                                 li.innerHTML = `<em>${originalHTML}</em>`;
                             }
                         });
+
+                        ShopifyTransformer.removeBrFromList(current);
+                        ShopifyTransformer.removeTrailingBrNodes(current);
+                        break;
+                    } else {
+                        let number = 0;
+                        listItems.forEach((li, index) => {
+                            ShopifyTransformer.removeBrFromListItem(li);
+                            number = index + 1;
+                            const itemHTML = li.innerHTML.trim();
+                            if (!itemHTML) {
+                                li.remove();
+                                return;
+                            }
+
+                            const paragraph = document.createElement('p');
+                            paragraph.innerHTML = `<em>${number}. ${itemHTML}</em>`;
+                            current.parentNode.insertBefore(paragraph, current);
+                        });
+
+                        ShopifyTransformer.removeTrailingBrNodes(current);
+                        current.remove();
                         break;
                     }
-
-                    listItems.forEach((li, index) => {
-                        const itemHTML = li.innerHTML.trim();
-                        if (!itemHTML) return;
-                        const number = index + 1;
-                        const paragraph = document.createElement('p');
-                        paragraph.innerHTML = `<em>${number}. ${itemHTML}</em>`;
-                        current.parentNode.insertBefore(paragraph, current);
-                    });
-
-                    // Remove the original list once converted
-                    current.remove();
-                    break;
                 }
 
                 if (tagName === 'p' || tagName.match(/^h[1-6]$/)) {
