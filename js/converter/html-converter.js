@@ -327,10 +327,7 @@ const HtmlConverter = {
             if (prevSibling && prevSibling.nodeType === 3) {
                 const prevText = prevSibling.textContent;
                 if (prevText && !prevText.endsWith(' ')) {
-                    const lastChar = prevText.slice(-1);
-                    if (!punctuationRegex.test(lastChar)) {
-                        parent.insertBefore(document.createTextNode(' '), link);
-                    }
+                    parent.insertBefore(document.createTextNode(' '), link);
                 }
             }
 
