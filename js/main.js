@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sopRemoveSpacing = document.getElementById('sop-remove-spacing');
     const sopRemoveDomain = document.getElementById('sop-remove-domain');
     const sopDisableSources = document.getElementById('sop-disable-sources');
+    const sopAddBrBeforeSources = document.getElementById('sop-add-br-before-sources');
     const sopSubOptions = document.getElementById('sop-sub-options');
     const shoppablesSop = document.getElementById('shoppables-sop');
     const shoppablesSopSubOptions = document.getElementById('shoppables-sop-sub-options');
@@ -199,7 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         savedShopifyOptions = {
                             sopRemoveSpacing: !!parsed.sopRemoveSpacing,
                             sopRemoveDomain: !!parsed.sopRemoveDomain,
-                            sopDisableSources: !!parsed.sopDisableSources
+                            sopDisableSources: parsed.sopDisableSources !== undefined ? !!parsed.sopDisableSources : true,
+                            sopAddBrBeforeSources: !!parsed.sopAddBrBeforeSources
                         };
                     }
                 } catch (err) {
@@ -232,6 +234,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sopDisableSources) {
                 sopDisableSources.checked = savedShopifyOptions ? savedShopifyOptions.sopDisableSources : true;
             }
+            if (sopAddBrBeforeSources) {
+                sopAddBrBeforeSources.checked = savedShopifyOptions ? savedShopifyOptions.sopAddBrBeforeSources : false;
+            }
             if (shoppablesBrReadAlso) {
                 shoppablesBrReadAlso.checked = savedShoppablesOptions ? savedShoppablesOptions.shoppablesBrReadAlso : false;
             }
@@ -262,7 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const optionsToSave = {
                 sopRemoveSpacing: !!(sopRemoveSpacing && sopRemoveSpacing.checked),
                 sopRemoveDomain: !!(sopRemoveDomain && sopRemoveDomain.checked),
-                sopDisableSources: !!(sopDisableSources && sopDisableSources.checked)
+                sopDisableSources: !!(sopDisableSources && sopDisableSources.checked),
+                sopAddBrBeforeSources: !!(sopAddBrBeforeSources && sopAddBrBeforeSources.checked)
             };
             localStorage.setItem(SHOPIFY_OPTIONS_STORAGE_KEY, JSON.stringify(optionsToSave));
 
@@ -429,6 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sopRemoveSpacing: sopRemoveSpacing,
         sopRemoveDomain: sopRemoveDomain,
         sopDisableSources: sopDisableSources,
+        sopAddBrBeforeSources: sopAddBrBeforeSources,
         sopSubOptions: sopSubOptions,
         shoppablesOptions: shoppablesOptions,
         shoppablesSop: shoppablesSop,

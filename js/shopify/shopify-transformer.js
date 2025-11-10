@@ -465,6 +465,7 @@ const ShopifyTransformer = {
     convertSourcesListToParagraphs(html, options = {}) {
         const tempDiv = HtmlParser.parseHTML(html);
         const disableSources = !!options.sopDisableSources;
+        const addBrBeforeSources = !!options.sopAddBrBeforeSources;
         
         // Find all paragraphs
         const paragraphs = tempDiv.querySelectorAll('p');
@@ -476,7 +477,7 @@ const ShopifyTransformer = {
             if (text.includes('sources') && (text === 'sources' || text === 'sources:' || text.includes('sources:'))) {
                 // Add spacer before Sources paragraph
                 const spacer = document.createElement('p');
-                spacer.innerHTML = '&nbsp;';
+                spacer.innerHTML = addBrBeforeSources ? '<br>' : '&nbsp;';
                 p.parentNode.insertBefore(spacer, p);
                 
                 // Format the Sources paragraph

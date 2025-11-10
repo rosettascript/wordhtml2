@@ -10,6 +10,7 @@ const ToolbarController = {
         sopRemoveSpacing: false,
         sopRemoveDomain: false,
         sopDisableSources: true,
+        sopAddBrBeforeSources: false,
         shoppablesSop: false,
         shoppablesBrReadAlso: false,
         shoppablesBrSources: false,
@@ -70,6 +71,7 @@ const ToolbarController = {
      * @param {HTMLElement} elements.sopRemoveSpacing - SOP Remove Spacing radio button
      * @param {HTMLElement} elements.sopRemoveDomain - SOP Remove Domain radio button
      * @param {HTMLElement} elements.sopDisableSources - SOP Disable Sources formatting checkbox
+     * @param {HTMLElement} elements.sopAddBrBeforeSources - SOP Add <br> before Sources checkbox
      * @param {HTMLElement} elements.sopSubOptions - SOP sub-options container
      * @param {HTMLElement} elements.shoppablesSop - Shoppables SOP checkbox
      * @param {HTMLElement} elements.shoppablesSopSubOptions - Shoppables SOP sub-options container
@@ -84,6 +86,13 @@ const ToolbarController = {
         if (!elements || !onChangeCallback) {
             console.error('ToolbarController: elements and onChangeCallback are required');
             return;
+        }
+
+        if (elements.sopAddBrBeforeSources) {
+            elements.sopAddBrBeforeSources.addEventListener('change', (e) => {
+                this.options.sopAddBrBeforeSources = e.target.checked;
+                this.notifyChange();
+            });
         }
 
         this.onChangeCallback = onChangeCallback;
@@ -113,6 +122,7 @@ const ToolbarController = {
                     this.options.sopRemoveSpacing = false;
                     this.options.sopRemoveDomain = false;
                     this.options.sopDisableSources = true;
+                    this.options.sopAddBrBeforeSources = false;
                     const sopCheckbox = document.getElementById('sop');
                     if (sopCheckbox) {
                         sopCheckbox.checked = true;
@@ -142,6 +152,7 @@ const ToolbarController = {
                     this.options.sopRemoveSpacing = false;
                     this.options.sopRemoveDomain = false;
                     this.options.sopDisableSources = false;
+                    this.options.sopAddBrBeforeSources = false;
                     this.resetShoppablesOptions(elements);
                     const sopCheckbox = document.getElementById('sop');
                     if (sopCheckbox) {
@@ -159,6 +170,10 @@ const ToolbarController = {
                     const sopDisableSourcesCheckbox = document.getElementById('sop-disable-sources');
                     if (sopDisableSourcesCheckbox) {
                         sopDisableSourcesCheckbox.checked = false;
+                    }
+                    const sopAddBrCheckbox = document.getElementById('sop-add-br-before-sources');
+                    if (sopAddBrCheckbox) {
+                        sopAddBrCheckbox.checked = false;
                     }
                     if (elements.sopSubOptions) {
                         this.updateSopSubOptionsVisibility(elements.sopSubOptions);
@@ -396,12 +411,17 @@ const ToolbarController = {
                 if (sopDisableSourcesCheckbox) {
                     sopDisableSourcesCheckbox.checked = this.options.sopDisableSources;
                 }
+                const sopAddBrCheckbox = document.getElementById('sop-add-br-before-sources');
+                if (sopAddBrCheckbox) {
+                    sopAddBrCheckbox.checked = this.options.sopAddBrBeforeSources;
+                }
             } else {
                 sopSubOptions.style.display = 'none';
                 // Uncheck sub-options when SOP is unchecked
                 this.options.sopRemoveSpacing = false;
                 this.options.sopRemoveDomain = false;
                 this.options.sopDisableSources = false;
+                this.options.sopAddBrBeforeSources = false;
                 const sopRemoveSpacingCheckbox = document.getElementById('sop-remove-spacing');
                 if (sopRemoveSpacingCheckbox) {
                     sopRemoveSpacingCheckbox.checked = false;
@@ -413,6 +433,10 @@ const ToolbarController = {
                 const sopDisableSourcesCheckbox = document.getElementById('sop-disable-sources');
                 if (sopDisableSourcesCheckbox) {
                     sopDisableSourcesCheckbox.checked = false;
+                }
+                const sopAddBrCheckbox = document.getElementById('sop-add-br-before-sources');
+                if (sopAddBrCheckbox) {
+                    sopAddBrCheckbox.checked = false;
                 }
             }
         }
@@ -477,6 +501,7 @@ const ToolbarController = {
         this.options.sopRemoveSpacing = false;
         this.options.sopRemoveDomain = false;
         this.options.sopDisableSources = false;
+        this.options.sopAddBrBeforeSources = false;
         if (elements.sopSubOptions) {
             this.updateSopSubOptionsVisibility(elements.sopSubOptions);
         }
