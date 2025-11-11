@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sopDisableSources = document.getElementById('sop-disable-sources');
     const sopStyleSourcesLi = document.getElementById('sop-style-sources-li');
     const sopAddBrBeforeSources = document.getElementById('sop-add-br-before-sources');
+    const sopAddStrongHeaders = document.getElementById('sop-add-strong-headers');
     const sopSubOptions = document.getElementById('sop-sub-options');
     const shoppablesSop = document.getElementById('shoppables-sop');
     const shoppablesSopSubOptions = document.getElementById('shoppables-sop-sub-options');
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const shoppablesDisableSources = document.getElementById('shoppables-disable-sources');
     const shoppablesStyleSourcesLi = document.getElementById('shoppables-style-sources-li');
     const shoppablesRemoveDomain = document.getElementById('shoppables-remove-domain');
+    const shoppablesAddStrongHeaders = document.getElementById('shoppables-add-strong-headers');
     const customCSSInput = document.getElementById('custom-css');
     const inputEmptyState = document.getElementById('input-empty-state');
     const outputEmptyState = document.getElementById('output-empty-state');
@@ -204,7 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             sopRemoveDomain: !!parsed.sopRemoveDomain,
                             sopDisableSources: parsed.sopDisableSources !== undefined ? !!parsed.sopDisableSources : true,
                             sopStyleSourcesLi: parsed.sopStyleSourcesLi !== undefined ? !!parsed.sopStyleSourcesLi : true,
-                            sopAddBrBeforeSources: !!parsed.sopAddBrBeforeSources
+                            sopAddBrBeforeSources: !!parsed.sopAddBrBeforeSources,
+                            shopifyAddStrongHeaders: parsed.shopifyAddStrongHeaders !== undefined ? !!parsed.shopifyAddStrongHeaders : true
                         };
                     }
                 } catch (err) {
@@ -221,7 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             shoppablesBrSources: !!parsedShoppables.shoppablesBrSources,
                             shoppablesDisableSources: !!parsedShoppables.shoppablesDisableSources,
                             shoppablesStyleSourcesLi: parsedShoppables.shoppablesStyleSourcesLi !== undefined ? !!parsedShoppables.shoppablesStyleSourcesLi : true,
-                            shoppablesRemoveDomain: !!parsedShoppables.shoppablesRemoveDomain
+                            shoppablesRemoveDomain: !!parsedShoppables.shoppablesRemoveDomain,
+                            shoppablesAddStrongHeaders: parsedShoppables.shoppablesAddStrongHeaders !== undefined ? !!parsedShoppables.shoppablesAddStrongHeaders : true
                         };
                     }
                 } catch (err) {
@@ -247,6 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sopAddBrBeforeSources) {
                 sopAddBrBeforeSources.checked = savedShopifyOptions ? savedShopifyOptions.sopAddBrBeforeSources : false;
             }
+            if (sopAddStrongHeaders) {
+                sopAddStrongHeaders.checked = savedShopifyOptions ? savedShopifyOptions.shopifyAddStrongHeaders : true;
+            }
             if (shoppablesBrReadAlso) {
                 shoppablesBrReadAlso.checked = savedShoppablesOptions ? savedShoppablesOptions.shoppablesBrReadAlso : false;
             }
@@ -264,6 +271,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (shoppablesRemoveDomain) {
                 shoppablesRemoveDomain.checked = savedShoppablesOptions ? savedShoppablesOptions.shoppablesRemoveDomain : false;
+            }
+            if (shoppablesAddStrongHeaders) {
+                shoppablesAddStrongHeaders.checked = savedShoppablesOptions ? savedShoppablesOptions.shoppablesAddStrongHeaders : true;
             }
         } catch (e) {
             console.warn('Failed to load settings from localStorage:', e);
@@ -285,7 +295,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 sopRemoveDomain: !!(sopRemoveDomain && sopRemoveDomain.checked),
                 sopDisableSources: !!(sopDisableSources && sopDisableSources.checked),
                 sopStyleSourcesLi: !!(sopStyleSourcesLi && sopStyleSourcesLi.checked),
-                sopAddBrBeforeSources: !!(sopAddBrBeforeSources && sopAddBrBeforeSources.checked)
+                sopAddBrBeforeSources: !!(sopAddBrBeforeSources && sopAddBrBeforeSources.checked),
+                shopifyAddStrongHeaders: !!(sopAddStrongHeaders && sopAddStrongHeaders.checked)
             };
             localStorage.setItem(SHOPIFY_OPTIONS_STORAGE_KEY, JSON.stringify(optionsToSave));
 
@@ -294,7 +305,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 shoppablesBrSources: !!(shoppablesBrSources && shoppablesBrSources.checked),
                 shoppablesDisableSources: !!(shoppablesDisableSources && shoppablesDisableSources.checked),
                 shoppablesStyleSourcesLi: !!(shoppablesStyleSourcesLi && shoppablesStyleSourcesLi.checked),
-                shoppablesRemoveDomain: !!(shoppablesRemoveDomain && shoppablesRemoveDomain.checked)
+                shoppablesRemoveDomain: !!(shoppablesRemoveDomain && shoppablesRemoveDomain.checked),
+                shoppablesAddStrongHeaders: !!(shoppablesAddStrongHeaders && shoppablesAddStrongHeaders.checked)
             };
             localStorage.setItem(SHOPPABLES_OPTIONS_STORAGE_KEY, JSON.stringify(shoppablesToSave));
         } catch (e) {
@@ -455,6 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sopDisableSources: sopDisableSources,
         sopStyleSourcesLi: sopStyleSourcesLi,
         sopAddBrBeforeSources: sopAddBrBeforeSources,
+        sopAddStrongHeaders: sopAddStrongHeaders,
         sopSubOptions: sopSubOptions,
         shoppablesOptions: shoppablesOptions,
         shoppablesSop: shoppablesSop,
@@ -463,7 +476,8 @@ document.addEventListener('DOMContentLoaded', () => {
         shoppablesBrSources: shoppablesBrSources,
         shoppablesDisableSources: shoppablesDisableSources,
         shoppablesStyleSourcesLi: shoppablesStyleSourcesLi,
-        shoppablesRemoveDomain: shoppablesRemoveDomain
+        shoppablesRemoveDomain: shoppablesRemoveDomain,
+        shoppablesAddStrongHeaders: shoppablesAddStrongHeaders
     }, () => {
         saveSettings();
         updateOutput();

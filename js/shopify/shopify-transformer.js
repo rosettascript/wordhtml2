@@ -32,6 +32,11 @@ const ShopifyTransformer = {
         // 1. Remove <em> tags (but preserve sources for special handling)
         result = this.removeEmTags(result);
 
+        // 1.5 Optionally wrap headings with <strong>
+        if (options.shopifyAddStrongHeaders !== false) {
+            result = this.wrapHeadersWithStrong(result);
+        }
+
         // 2. Convert Sources list to numbered paragraphs (after removing em tags, so we can add fresh em tags)
         result = this.convertSourcesListToParagraphs(result, options);
 
@@ -105,6 +110,62 @@ const ShopifyTransformer = {
     },
 
     /**
+     * Wrap headings with <strong> tags, avoiding duplicate nesting
+     * @param {string} html - HTML string
+     * @returns {string} - HTML with headings wrapped in <strong>
+     */
+    wrapHeadersWithStrong(html) {
+        const tempDiv = HtmlParser.parseHTML(html);
+        const headings = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+        headings.forEach(heading => {
+            if (!heading) return;
+            const textContent = heading.textContent || heading.innerText || '';
+            if (!textContent.trim()) {
+                return;
+            }
+
+            const elementChildren = Array.from(heading.children || []);
+            if (elementChildren.length === 1 && elementChildren[0].tagName && elementChildren[0].tagName.toLowerCase() === 'strong') {
+                const onlyChild = elementChildren[0];
+                const hasOtherContent = Array.from(heading.childNodes || []).some(node => {
+                    if (node === onlyChild) {
+                        return false;
+                    }
+                    if (node.nodeType === 3) {
+                        return node.textContent && node.textContent.trim() !== '';
+                    }
+                    if (node.nodeType === 1) {
+                        return true;
+                    }
+                    return false;
+                });
+                if (!hasOtherContent) {
+                    return;
+                }
+            }
+
+            const strongWrapper = document.createElement('strong');
+
+            while (heading.firstChild) {
+                const child = heading.firstChild;
+                if (child.nodeType === 1 && child.tagName && child.tagName.toLowerCase() === 'strong') {
+                    while (child.firstChild) {
+                        strongWrapper.appendChild(child.firstChild);
+                    }
+                    heading.removeChild(child);
+                    continue;
+                }
+                strongWrapper.appendChild(child);
+            }
+
+            heading.appendChild(strongWrapper);
+        });
+
+        return tempDiv.innerHTML;
+    },
+
+    /**
      * Apply basic tweaks to HTML
      * @param {string} html - Input HTML
      * @param {Object} options - Options
@@ -116,6 +177,9 @@ const ShopifyTransformer = {
         result = this.removeBrFromHeadings(result);
         // Remove <em> tags first
         result = this.removeEmTags(result);
+        if (options.shopifyAddStrongHeaders !== false) {
+            result = this.wrapHeadersWithStrong(result);
+        }
         // Convert Sources list to numbered paragraphs (after removing em tags)
         result = this.convertSourcesListToParagraphs(result, options);
         result = this.fixKeyTakeawaysColon(result);

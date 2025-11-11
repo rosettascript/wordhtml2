@@ -26,13 +26,17 @@ const ShoppablesTransformer = {
             shoppablesBrSources: !!options.shoppablesBrSources,
             shoppablesDisableSources: !!options.shoppablesDisableSources,
             shoppablesStyleSourcesLi: options.shoppablesStyleSourcesLi !== false,
-            shoppablesRemoveDomain: !!options.shoppablesRemoveDomain
+            shoppablesRemoveDomain: !!options.shoppablesRemoveDomain,
+            shoppablesAddStrongHeaders: options.shoppablesAddStrongHeaders !== false
         };
 
         // Base cleanup borrowed from Shopify transformer helpers
         let result = html;
         result = ShopifyTransformer.removeBrFromHeadings(result);
         result = ShopifyTransformer.removeEmTags(result);
+        if (shoppablesOptions.shoppablesAddStrongHeaders) {
+            result = ShopifyTransformer.wrapHeadersWithStrong(result);
+        }
         result = this.convertSourcesListToParagraphs(result, shoppablesOptions);
         result = ShopifyTransformer.fixKeyTakeawaysColon(result);
         result = ShopifyTransformer.fixAllLinks(result, { sopRemoveDomain: !!shoppablesOptions.shoppablesRemoveDomain });

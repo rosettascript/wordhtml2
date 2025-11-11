@@ -12,12 +12,14 @@ const ToolbarController = {
         sopDisableSources: true,
         sopStyleSourcesLi: true,
         sopAddBrBeforeSources: false,
+        shopifyAddStrongHeaders: true,
         shoppablesSop: false,
         shoppablesBrReadAlso: false,
         shoppablesBrSources: false,
         shoppablesDisableSources: false,
         shoppablesStyleSourcesLi: true,
-        shoppablesRemoveDomain: false
+        shoppablesRemoveDomain: false,
+        shoppablesAddStrongHeaders: true
     },
     onChangeCallback: null,
 
@@ -75,6 +77,7 @@ const ToolbarController = {
      * @param {HTMLElement} elements.sopDisableSources - SOP Disable Sources formatting checkbox
      * @param {HTMLElement} elements.sopStyleSourcesLi - SOP italicize sources checkbox
      * @param {HTMLElement} elements.sopAddBrBeforeSources - SOP Add <br> before Sources checkbox
+     * @param {HTMLElement} elements.sopAddStrongHeaders - SOP Add <strong> to headers checkbox
      * @param {HTMLElement} elements.sopSubOptions - SOP sub-options container
      * @param {HTMLElement} elements.shoppablesSop - Shoppables SOP checkbox
      * @param {HTMLElement} elements.shoppablesSopSubOptions - Shoppables SOP sub-options container
@@ -83,6 +86,7 @@ const ToolbarController = {
      * @param {HTMLElement} elements.shoppablesDisableSources - Shoppables disable sources formatting checkbox
      * @param {HTMLElement} elements.shoppablesStyleSourcesLi - Shoppables italicize sources checkbox
      * @param {HTMLElement} elements.shoppablesRemoveDomain - Shoppables remove domain from links checkbox
+     * @param {HTMLElement} elements.shoppablesAddStrongHeaders - Shoppables Add <strong> to headers checkbox
      * @param {Function} onChangeCallback - Callback when options change
      * @param {Object} initialOptions - Saved options to initialize with
      */
@@ -102,6 +106,13 @@ const ToolbarController = {
         if (elements.sopStyleSourcesLi) {
             elements.sopStyleSourcesLi.addEventListener('change', (e) => {
                 this.options.sopStyleSourcesLi = e.target.checked;
+                this.notifyChange();
+            });
+        }
+
+        if (elements.sopAddStrongHeaders) {
+            elements.sopAddStrongHeaders.addEventListener('change', (e) => {
+                this.options.shopifyAddStrongHeaders = e.target.checked;
                 this.notifyChange();
             });
         }
@@ -134,6 +145,7 @@ const ToolbarController = {
                     this.options.sopRemoveDomain = false;
                     this.options.sopDisableSources = true;
                     this.options.sopAddBrBeforeSources = false;
+                    this.options.shopifyAddStrongHeaders = this.options.shopifyAddStrongHeaders !== false;
                     const sopCheckbox = document.getElementById('sop');
                     if (sopCheckbox) {
                         sopCheckbox.checked = true;
@@ -147,6 +159,7 @@ const ToolbarController = {
                     this.resetShoppablesOptions(elements);
                 } else if (this.mode === 'shoppables') {
                     this.options.shoppablesSop = true;
+                    this.options.shoppablesAddStrongHeaders = this.options.shoppablesAddStrongHeaders !== false;
                     const shoppablesSopCheckbox = document.getElementById('shoppables-sop');
                     if (shoppablesSopCheckbox) {
                         shoppablesSopCheckbox.checked = true;
@@ -312,6 +325,13 @@ const ToolbarController = {
             });
         }
 
+        if (elements.shoppablesAddStrongHeaders) {
+            elements.shoppablesAddStrongHeaders.addEventListener('change', (e) => {
+                this.options.shoppablesAddStrongHeaders = e.target.checked;
+                this.notifyChange();
+            });
+        }
+
         // Initialize format info toggle
         this.initFormatInfoToggle();
 
@@ -327,6 +347,7 @@ const ToolbarController = {
                 sopCheckbox.checked = true;
                 sopCheckbox.disabled = true;
             }
+            this.options.shopifyAddStrongHeaders = this.options.shopifyAddStrongHeaders !== false;
             if (elements.sopSubOptions) {
                 this.updateSopSubOptionsVisibility(elements.sopSubOptions);
             }
@@ -337,6 +358,7 @@ const ToolbarController = {
                 shoppablesSopCheckbox.checked = true;
                 shoppablesSopCheckbox.disabled = true;
             }
+            this.options.shoppablesAddStrongHeaders = this.options.shoppablesAddStrongHeaders !== false;
             if (elements.shoppablesSopSubOptions) {
                 this.updateShoppablesSubOptionsVisibility(elements.shoppablesSopSubOptions);
             }
@@ -468,6 +490,10 @@ const ToolbarController = {
                 if (sopAddBrCheckbox) {
                     sopAddBrCheckbox.checked = this.options.sopAddBrBeforeSources;
                 }
+                const sopAddStrongHeadersCheckbox = document.getElementById('sop-add-strong-headers');
+                if (sopAddStrongHeadersCheckbox) {
+                    sopAddStrongHeadersCheckbox.checked = this.options.shopifyAddStrongHeaders;
+                }
             } else {
                 sopSubOptions.style.display = 'none';
                 // Uncheck sub-options when SOP is unchecked
@@ -496,6 +522,10 @@ const ToolbarController = {
                 const sopAddBrCheckbox = document.getElementById('sop-add-br-before-sources');
                 if (sopAddBrCheckbox) {
                     sopAddBrCheckbox.checked = false;
+                }
+                const sopAddStrongHeadersCheckbox = document.getElementById('sop-add-strong-headers');
+                if (sopAddStrongHeadersCheckbox) {
+                    sopAddStrongHeadersCheckbox.checked = this.options.shopifyAddStrongHeaders;
                 }
             }
         }
@@ -530,6 +560,10 @@ const ToolbarController = {
                 if (removeDomainCheckbox) {
                     removeDomainCheckbox.checked = this.options.shoppablesRemoveDomain;
                 }
+                const addStrongHeadersCheckbox = document.getElementById('shoppables-add-strong-headers');
+                if (addStrongHeadersCheckbox) {
+                    addStrongHeadersCheckbox.checked = this.options.shoppablesAddStrongHeaders;
+                }
             } else {
                 shoppablesSopSubOptions.style.display = 'none';
                 this.options.shoppablesBrReadAlso = false;
@@ -557,6 +591,10 @@ const ToolbarController = {
                 const removeDomainCheckbox = document.getElementById('shoppables-remove-domain');
                 if (removeDomainCheckbox) {
                     removeDomainCheckbox.checked = false;
+                }
+                const addStrongHeadersCheckbox = document.getElementById('shoppables-add-strong-headers');
+                if (addStrongHeadersCheckbox) {
+                    addStrongHeadersCheckbox.checked = this.options.shoppablesAddStrongHeaders;
                 }
                 const shoppablesSopCheckbox = document.getElementById('shoppables-sop');
                 if (shoppablesSopCheckbox) {
