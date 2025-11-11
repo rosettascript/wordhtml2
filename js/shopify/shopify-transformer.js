@@ -29,7 +29,7 @@ const ShopifyTransformer = {
         // 0. Clean up malformed headings with br tags (from Word)
         result = this.removeBrFromHeadings(result);
 
-        // 1. Remove <em> tags (but preserve sources for special handling)
+        // 1. Remove <em> tags from Key Takeaways (preserve other emphasis)
         result = this.removeEmTags(result);
 
         // 1.5 Optionally wrap headings with <strong>
@@ -175,7 +175,7 @@ const ShopifyTransformer = {
         let result = html;
         // First, clean up malformed headings with br tags (from Word)
         result = this.removeBrFromHeadings(result);
-        // Remove <em> tags first
+        // Remove <em> tags first (Key Takeaways only)
         result = this.removeEmTags(result);
         if (options.shopifyAddStrongHeaders !== false) {
             result = this.wrapHeadersWithStrong(result);
@@ -191,16 +191,47 @@ const ShopifyTransformer = {
     },
 
     /**
-     * Remove <em> tags (keep content)
+     * Remove <em>/<i> tags within Key Takeaways section only
      * @param {string} html - HTML string
-     * @returns {string} - HTML without <em> tags
+     * @returns {string} - HTML with Key Takeaways emphasis removed
      */
     removeEmTags(html) {
-        // Remove opening and closing <em> tags
-        let cleaned = html.replace(/<\/?em>/gi, '');
-        // Also remove <i> tags (italic)
-        cleaned = cleaned.replace(/<\/?i>/gi, '');
-        return cleaned;
+        const tempDiv = HtmlParser.parseHTML(html);
+        const headings = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+        const unwrapEmTags = (element) => {
+            if (!element) return;
+            const tags = element.querySelectorAll('em, i');
+            tags.forEach(tag => {
+                while (tag.firstChild) {
+                    tag.parentNode.insertBefore(tag.firstChild, tag);
+                }
+                tag.remove();
+            });
+        };
+
+        headings.forEach(heading => {
+            const text = HtmlParser.getTextContent(heading.innerHTML || heading.textContent || '').toLowerCase().trim();
+            if (!text.includes('key takeaways')) {
+                return;
+            }
+
+            // Remove emphasis from the heading itself
+            unwrapEmTags(heading);
+
+            // Remove emphasis from following siblings until the next heading
+            let current = heading.nextElementSibling;
+            while (current) {
+                const tagName = current.tagName ? current.tagName.toLowerCase() : '';
+                if (tagName.match(/^h[1-6]$/)) {
+                    break;
+                }
+                unwrapEmTags(current);
+                current = current.nextElementSibling;
+            }
+        });
+
+        return tempDiv.innerHTML;
     },
 
     /**
