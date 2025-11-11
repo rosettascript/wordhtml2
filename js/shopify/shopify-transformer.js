@@ -467,11 +467,19 @@ const ShopifyTransformer = {
         const disableSources = !!options.sopDisableSources;
         const applyInlineItalic = !!options.sopStyleSourcesLi;
         const addBrBeforeSources = !!options.sopAddBrBeforeSources;
+        const isReadAlsoList = (node) => {
+            if (!node) return false;
+            const prev = node.previousElementSibling;
+            if (!prev) return false;
+            const text = HtmlParser.getTextContent(prev.innerHTML || prev.textContent || '').toLowerCase().trim();
+            return text.startsWith('read also') || text.startsWith('read more');
+        };
         
         // Find all paragraphs
         const paragraphs = tempDiv.querySelectorAll('p');
-        
-        for (let p of paragraphs) {
+
+        for (let i = paragraphs.length - 1; i >= 0; i--) {
+            const p = paragraphs[i];
             const text = HtmlParser.getTextContent(p.innerHTML).toLowerCase().trim();
             
             // Check if this is a "Sources:" paragraph
@@ -494,6 +502,10 @@ const ShopifyTransformer = {
                     
                     // If we found an ordered list right after Sources
                     if (tagName === 'ol' || (disableSources && tagName === 'ul')) {
+                        if (tagName === 'ul' && isReadAlsoList(current)) {
+                            current = current.nextElementSibling;
+                            continue;
+                        }
                         const listItems = current.querySelectorAll('li');
                         
                         if (listItems.length > 0) {
@@ -556,6 +568,10 @@ const ShopifyTransformer = {
                     
                     current = current.nextElementSibling;
                 }
+            }
+
+            if (text.includes('sources') && (text === 'sources' || text === 'sources:' || text.includes('sources:'))) {
+                break;
             }
         }
         

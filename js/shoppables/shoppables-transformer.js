@@ -59,10 +59,18 @@ const ShoppablesTransformer = {
         const disableSources = !!options.shoppablesDisableSources;
         const applyInlineItalic = !!options.shoppablesStyleSourcesLi;
         const tempDiv = HtmlParser.parseHTML(html);
+        const isReadAlsoList = (node) => {
+            if (!node) return false;
+            const prev = node.previousElementSibling;
+            if (!prev) return false;
+            const text = HtmlParser.getTextContent(prev.innerHTML || prev.textContent || '').toLowerCase().trim();
+            return text.startsWith('read also') || text.startsWith('read more');
+        };
 
         const paragraphs = tempDiv.querySelectorAll('p');
 
-        for (let p of paragraphs) {
+        for (let i = paragraphs.length - 1; i >= 0; i--) {
+            const p = paragraphs[i];
             const text = HtmlParser.getTextContent(p.innerHTML).toLowerCase().trim();
             if (!text.includes('sources')) continue;
 
@@ -78,6 +86,10 @@ const ShoppablesTransformer = {
                 const tagName = current.tagName ? current.tagName.toLowerCase() : '';
 
                 if (tagName === 'ol' || tagName === 'ul') {
+                    if (tagName === 'ul' && isReadAlsoList(current)) {
+                        current = current.nextElementSibling;
+                        continue;
+                    }
                     const listItems = current.querySelectorAll('li');
                     if (listItems.length === 0) break;
 
@@ -135,6 +147,8 @@ const ShoppablesTransformer = {
 
                 current = current.nextElementSibling;
             }
+
+            break;
         }
 
         return tempDiv.innerHTML;
