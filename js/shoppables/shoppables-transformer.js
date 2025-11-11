@@ -25,6 +25,7 @@ const ShoppablesTransformer = {
             shoppablesBrReadAlso: !!options.shoppablesBrReadAlso,
             shoppablesBrSources: !!options.shoppablesBrSources,
             shoppablesDisableSources: !!options.shoppablesDisableSources,
+            shoppablesStyleSourcesLi: options.shoppablesStyleSourcesLi !== false,
             shoppablesRemoveDomain: !!options.shoppablesRemoveDomain
         };
 
@@ -56,6 +57,7 @@ const ShoppablesTransformer = {
      */
     convertSourcesListToParagraphs(html, options = {}) {
         const disableSources = !!options.shoppablesDisableSources;
+        const applyInlineItalic = !!options.shoppablesStyleSourcesLi;
         const tempDiv = HtmlParser.parseHTML(html);
 
         const paragraphs = tempDiv.querySelectorAll('p');
@@ -87,13 +89,18 @@ const ShoppablesTransformer = {
                                 li.remove();
                                 return;
                             }
-                            if (li.style) {
-                                li.style.fontStyle = 'italic';
-                            } else {
-                                li.setAttribute('style', 'font-style: italic;');
-                            }
+
                             if (!/^<em[\s>]/i.test(originalHTML) || !/<\/em>\s*$/i.test(originalHTML)) {
                                 li.innerHTML = `<em>${originalHTML}</em>`;
+                            }
+
+                            if (applyInlineItalic) {
+                                li.style.fontStyle = 'italic';
+                            } else {
+                                li.style.removeProperty('font-style');
+                                if (!li.getAttribute('style')) {
+                                    li.removeAttribute('style');
+                                }
                             }
                         });
 

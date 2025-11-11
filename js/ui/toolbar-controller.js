@@ -10,11 +10,13 @@ const ToolbarController = {
         sopRemoveSpacing: false,
         sopRemoveDomain: false,
         sopDisableSources: true,
+        sopStyleSourcesLi: true,
         sopAddBrBeforeSources: false,
         shoppablesSop: false,
         shoppablesBrReadAlso: false,
         shoppablesBrSources: false,
         shoppablesDisableSources: false,
+        shoppablesStyleSourcesLi: true,
         shoppablesRemoveDomain: false
     },
     onChangeCallback: null,
@@ -71,6 +73,7 @@ const ToolbarController = {
      * @param {HTMLElement} elements.sopRemoveSpacing - SOP Remove Spacing radio button
      * @param {HTMLElement} elements.sopRemoveDomain - SOP Remove Domain radio button
      * @param {HTMLElement} elements.sopDisableSources - SOP Disable Sources formatting checkbox
+     * @param {HTMLElement} elements.sopStyleSourcesLi - SOP italicize sources checkbox
      * @param {HTMLElement} elements.sopAddBrBeforeSources - SOP Add <br> before Sources checkbox
      * @param {HTMLElement} elements.sopSubOptions - SOP sub-options container
      * @param {HTMLElement} elements.shoppablesSop - Shoppables SOP checkbox
@@ -78,6 +81,7 @@ const ToolbarController = {
      * @param {HTMLElement} elements.shoppablesBrReadAlso - Shoppables <br> before Read also checkbox
      * @param {HTMLElement} elements.shoppablesBrSources - Shoppables <br> before Sources checkbox
      * @param {HTMLElement} elements.shoppablesDisableSources - Shoppables disable sources formatting checkbox
+     * @param {HTMLElement} elements.shoppablesStyleSourcesLi - Shoppables italicize sources checkbox
      * @param {HTMLElement} elements.shoppablesRemoveDomain - Shoppables remove domain from links checkbox
      * @param {Function} onChangeCallback - Callback when options change
      * @param {Object} initialOptions - Saved options to initialize with
@@ -91,6 +95,13 @@ const ToolbarController = {
         if (elements.sopAddBrBeforeSources) {
             elements.sopAddBrBeforeSources.addEventListener('change', (e) => {
                 this.options.sopAddBrBeforeSources = e.target.checked;
+                this.notifyChange();
+            });
+        }
+
+        if (elements.sopStyleSourcesLi) {
+            elements.sopStyleSourcesLi.addEventListener('change', (e) => {
+                this.options.sopStyleSourcesLi = e.target.checked;
                 this.notifyChange();
             });
         }
@@ -152,6 +163,7 @@ const ToolbarController = {
                     this.options.sopRemoveSpacing = false;
                     this.options.sopRemoveDomain = false;
                     this.options.sopDisableSources = false;
+                    this.options.sopStyleSourcesLi = false;
                     this.options.sopAddBrBeforeSources = false;
                     this.resetShoppablesOptions(elements);
                     const sopCheckbox = document.getElementById('sop');
@@ -170,6 +182,11 @@ const ToolbarController = {
                     const sopDisableSourcesCheckbox = document.getElementById('sop-disable-sources');
                     if (sopDisableSourcesCheckbox) {
                         sopDisableSourcesCheckbox.checked = false;
+                    }
+                    const sopStyleCheckbox = document.getElementById('sop-style-sources-li');
+                    if (sopStyleCheckbox) {
+                        sopStyleCheckbox.checked = false;
+                        sopStyleCheckbox.disabled = true;
                     }
                     const sopAddBrCheckbox = document.getElementById('sop-add-br-before-sources');
                     if (sopAddBrCheckbox) {
@@ -217,7 +234,19 @@ const ToolbarController = {
         // SOP Disable Sources checkbox handler
         if (elements.sopDisableSources) {
             elements.sopDisableSources.addEventListener('change', (e) => {
-                this.options.sopDisableSources = e.target.checked;
+                const checked = e.target.checked;
+                this.options.sopDisableSources = checked;
+
+                if (elements.sopStyleSourcesLi) {
+                    elements.sopStyleSourcesLi.disabled = !checked;
+                    if (!checked) {
+                        elements.sopStyleSourcesLi.checked = false;
+                        this.options.sopStyleSourcesLi = false;
+                    } else {
+                        elements.sopStyleSourcesLi.checked = this.options.sopStyleSourcesLi;
+                    }
+                }
+
                 this.notifyChange();
             });
         }
@@ -252,7 +281,26 @@ const ToolbarController = {
 
         if (elements.shoppablesDisableSources) {
             elements.shoppablesDisableSources.addEventListener('change', (e) => {
-                this.options.shoppablesDisableSources = e.target.checked;
+                const checked = e.target.checked;
+                this.options.shoppablesDisableSources = checked;
+
+                if (elements.shoppablesStyleSourcesLi) {
+                    elements.shoppablesStyleSourcesLi.disabled = !checked;
+                    if (!checked) {
+                        elements.shoppablesStyleSourcesLi.checked = false;
+                        this.options.shoppablesStyleSourcesLi = false;
+                    } else {
+                        elements.shoppablesStyleSourcesLi.checked = this.options.shoppablesStyleSourcesLi;
+                    }
+                }
+
+                this.notifyChange();
+            });
+        }
+
+        if (elements.shoppablesStyleSourcesLi) {
+            elements.shoppablesStyleSourcesLi.addEventListener('change', (e) => {
+                this.options.shoppablesStyleSourcesLi = e.target.checked;
                 this.notifyChange();
             });
         }
@@ -411,6 +459,11 @@ const ToolbarController = {
                 if (sopDisableSourcesCheckbox) {
                     sopDisableSourcesCheckbox.checked = this.options.sopDisableSources;
                 }
+                const sopStyleCheckbox = document.getElementById('sop-style-sources-li');
+                if (sopStyleCheckbox) {
+                    sopStyleCheckbox.checked = this.options.sopDisableSources && this.options.sopStyleSourcesLi;
+                    sopStyleCheckbox.disabled = !this.options.sopDisableSources;
+                }
                 const sopAddBrCheckbox = document.getElementById('sop-add-br-before-sources');
                 if (sopAddBrCheckbox) {
                     sopAddBrCheckbox.checked = this.options.sopAddBrBeforeSources;
@@ -421,6 +474,7 @@ const ToolbarController = {
                 this.options.sopRemoveSpacing = false;
                 this.options.sopRemoveDomain = false;
                 this.options.sopDisableSources = false;
+                this.options.sopStyleSourcesLi = false;
                 this.options.sopAddBrBeforeSources = false;
                 const sopRemoveSpacingCheckbox = document.getElementById('sop-remove-spacing');
                 if (sopRemoveSpacingCheckbox) {
@@ -433,6 +487,11 @@ const ToolbarController = {
                 const sopDisableSourcesCheckbox = document.getElementById('sop-disable-sources');
                 if (sopDisableSourcesCheckbox) {
                     sopDisableSourcesCheckbox.checked = false;
+                }
+                const sopStyleCheckbox = document.getElementById('sop-style-sources-li');
+                if (sopStyleCheckbox) {
+                    sopStyleCheckbox.checked = false;
+                    sopStyleCheckbox.disabled = true;
                 }
                 const sopAddBrCheckbox = document.getElementById('sop-add-br-before-sources');
                 if (sopAddBrCheckbox) {
@@ -462,6 +521,11 @@ const ToolbarController = {
                 if (disableSourcesCheckbox) {
                     disableSourcesCheckbox.checked = this.options.shoppablesDisableSources;
                 }
+                const styleSourcesCheckbox = document.getElementById('shoppables-style-sources-li');
+                if (styleSourcesCheckbox) {
+                    styleSourcesCheckbox.checked = this.options.shoppablesDisableSources && this.options.shoppablesStyleSourcesLi;
+                    styleSourcesCheckbox.disabled = !this.options.shoppablesDisableSources;
+                }
                 const removeDomainCheckbox = document.getElementById('shoppables-remove-domain');
                 if (removeDomainCheckbox) {
                     removeDomainCheckbox.checked = this.options.shoppablesRemoveDomain;
@@ -471,6 +535,7 @@ const ToolbarController = {
                 this.options.shoppablesBrReadAlso = false;
                 this.options.shoppablesBrSources = false;
                 this.options.shoppablesDisableSources = false;
+                this.options.shoppablesStyleSourcesLi = false;
                 this.options.shoppablesRemoveDomain = false;
                 const brReadAlsoCheckbox = document.getElementById('shoppables-br-read-also');
                 if (brReadAlsoCheckbox) {
@@ -484,9 +549,19 @@ const ToolbarController = {
                 if (disableSourcesCheckbox) {
                     disableSourcesCheckbox.checked = false;
                 }
+                const styleSourcesCheckbox = document.getElementById('shoppables-style-sources-li');
+                if (styleSourcesCheckbox) {
+                    styleSourcesCheckbox.checked = false;
+                    styleSourcesCheckbox.disabled = true;
+                }
                 const removeDomainCheckbox = document.getElementById('shoppables-remove-domain');
                 if (removeDomainCheckbox) {
                     removeDomainCheckbox.checked = false;
+                }
+                const shoppablesSopCheckbox = document.getElementById('shoppables-sop');
+                if (shoppablesSopCheckbox) {
+                    shoppablesSopCheckbox.checked = false;
+                    shoppablesSopCheckbox.disabled = false;
                 }
             }
         }
@@ -501,6 +576,7 @@ const ToolbarController = {
         this.options.sopRemoveSpacing = false;
         this.options.sopRemoveDomain = false;
         this.options.sopDisableSources = false;
+        this.options.sopStyleSourcesLi = false;
         this.options.sopAddBrBeforeSources = false;
         if (elements.sopSubOptions) {
             this.updateSopSubOptionsVisibility(elements.sopSubOptions);
@@ -509,6 +585,11 @@ const ToolbarController = {
         if (sopCheckbox) {
             sopCheckbox.checked = false;
             sopCheckbox.disabled = false;
+        }
+        const sopStyleCheckbox = document.getElementById('sop-style-sources-li');
+        if (sopStyleCheckbox) {
+            sopStyleCheckbox.checked = false;
+            sopStyleCheckbox.disabled = true;
         }
     },
 
@@ -521,6 +602,7 @@ const ToolbarController = {
         this.options.shoppablesBrReadAlso = false;
         this.options.shoppablesBrSources = false;
         this.options.shoppablesDisableSources = false;
+        this.options.shoppablesStyleSourcesLi = false;
         this.options.shoppablesRemoveDomain = false;
         if (elements.shoppablesSopSubOptions) {
             this.updateShoppablesSubOptionsVisibility(elements.shoppablesSopSubOptions);
@@ -529,6 +611,11 @@ const ToolbarController = {
         if (shoppablesSopCheckbox) {
             shoppablesSopCheckbox.checked = false;
             shoppablesSopCheckbox.disabled = false;
+        }
+        const shoppablesStyleCheckbox = document.getElementById('shoppables-style-sources-li');
+        if (shoppablesStyleCheckbox) {
+            shoppablesStyleCheckbox.checked = false;
+            shoppablesStyleCheckbox.disabled = true;
         }
     },
 

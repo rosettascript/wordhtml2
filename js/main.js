@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sopRemoveSpacing = document.getElementById('sop-remove-spacing');
     const sopRemoveDomain = document.getElementById('sop-remove-domain');
     const sopDisableSources = document.getElementById('sop-disable-sources');
+    const sopStyleSourcesLi = document.getElementById('sop-style-sources-li');
     const sopAddBrBeforeSources = document.getElementById('sop-add-br-before-sources');
     const sopSubOptions = document.getElementById('sop-sub-options');
     const shoppablesSop = document.getElementById('shoppables-sop');
@@ -29,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const shoppablesBrReadAlso = document.getElementById('shoppables-br-read-also');
     const shoppablesBrSources = document.getElementById('shoppables-br-sources');
     const shoppablesDisableSources = document.getElementById('shoppables-disable-sources');
+    const shoppablesStyleSourcesLi = document.getElementById('shoppables-style-sources-li');
     const shoppablesRemoveDomain = document.getElementById('shoppables-remove-domain');
     const customCSSInput = document.getElementById('custom-css');
     const inputEmptyState = document.getElementById('input-empty-state');
@@ -201,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             sopRemoveSpacing: !!parsed.sopRemoveSpacing,
                             sopRemoveDomain: !!parsed.sopRemoveDomain,
                             sopDisableSources: parsed.sopDisableSources !== undefined ? !!parsed.sopDisableSources : true,
+                            sopStyleSourcesLi: parsed.sopStyleSourcesLi !== undefined ? !!parsed.sopStyleSourcesLi : true,
                             sopAddBrBeforeSources: !!parsed.sopAddBrBeforeSources
                         };
                     }
@@ -217,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             shoppablesBrReadAlso: !!parsedShoppables.shoppablesBrReadAlso,
                             shoppablesBrSources: !!parsedShoppables.shoppablesBrSources,
                             shoppablesDisableSources: !!parsedShoppables.shoppablesDisableSources,
+                            shoppablesStyleSourcesLi: parsedShoppables.shoppablesStyleSourcesLi !== undefined ? !!parsedShoppables.shoppablesStyleSourcesLi : true,
                             shoppablesRemoveDomain: !!parsedShoppables.shoppablesRemoveDomain
                         };
                     }
@@ -234,6 +238,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sopDisableSources) {
                 sopDisableSources.checked = savedShopifyOptions ? savedShopifyOptions.sopDisableSources : true;
             }
+            if (sopStyleSourcesLi) {
+                const parentChecked = sopDisableSources ? sopDisableSources.checked : false;
+                const savedChild = savedShopifyOptions ? savedShopifyOptions.sopStyleSourcesLi !== undefined ? savedShopifyOptions.sopStyleSourcesLi : true : true;
+                sopStyleSourcesLi.checked = parentChecked && savedChild;
+                sopStyleSourcesLi.disabled = !parentChecked;
+            }
             if (sopAddBrBeforeSources) {
                 sopAddBrBeforeSources.checked = savedShopifyOptions ? savedShopifyOptions.sopAddBrBeforeSources : false;
             }
@@ -245,6 +255,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (shoppablesDisableSources) {
                 shoppablesDisableSources.checked = savedShoppablesOptions ? savedShoppablesOptions.shoppablesDisableSources : false;
+            }
+            if (shoppablesStyleSourcesLi) {
+                const parentChecked = shoppablesDisableSources ? shoppablesDisableSources.checked : false;
+                const savedChild = savedShoppablesOptions ? savedShoppablesOptions.shoppablesStyleSourcesLi !== undefined ? savedShoppablesOptions.shoppablesStyleSourcesLi : true : true;
+                shoppablesStyleSourcesLi.checked = parentChecked && savedChild;
+                shoppablesStyleSourcesLi.disabled = !parentChecked;
             }
             if (shoppablesRemoveDomain) {
                 shoppablesRemoveDomain.checked = savedShoppablesOptions ? savedShoppablesOptions.shoppablesRemoveDomain : false;
@@ -268,6 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sopRemoveSpacing: !!(sopRemoveSpacing && sopRemoveSpacing.checked),
                 sopRemoveDomain: !!(sopRemoveDomain && sopRemoveDomain.checked),
                 sopDisableSources: !!(sopDisableSources && sopDisableSources.checked),
+                sopStyleSourcesLi: !!(sopStyleSourcesLi && sopStyleSourcesLi.checked),
                 sopAddBrBeforeSources: !!(sopAddBrBeforeSources && sopAddBrBeforeSources.checked)
             };
             localStorage.setItem(SHOPIFY_OPTIONS_STORAGE_KEY, JSON.stringify(optionsToSave));
@@ -276,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 shoppablesBrReadAlso: !!(shoppablesBrReadAlso && shoppablesBrReadAlso.checked),
                 shoppablesBrSources: !!(shoppablesBrSources && shoppablesBrSources.checked),
                 shoppablesDisableSources: !!(shoppablesDisableSources && shoppablesDisableSources.checked),
+                shoppablesStyleSourcesLi: !!(shoppablesStyleSourcesLi && shoppablesStyleSourcesLi.checked),
                 shoppablesRemoveDomain: !!(shoppablesRemoveDomain && shoppablesRemoveDomain.checked)
             };
             localStorage.setItem(SHOPPABLES_OPTIONS_STORAGE_KEY, JSON.stringify(shoppablesToSave));
@@ -435,6 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sopRemoveSpacing: sopRemoveSpacing,
         sopRemoveDomain: sopRemoveDomain,
         sopDisableSources: sopDisableSources,
+        sopStyleSourcesLi: sopStyleSourcesLi,
         sopAddBrBeforeSources: sopAddBrBeforeSources,
         sopSubOptions: sopSubOptions,
         shoppablesOptions: shoppablesOptions,
@@ -443,6 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
         shoppablesBrReadAlso: shoppablesBrReadAlso,
         shoppablesBrSources: shoppablesBrSources,
         shoppablesDisableSources: shoppablesDisableSources,
+        shoppablesStyleSourcesLi: shoppablesStyleSourcesLi,
         shoppablesRemoveDomain: shoppablesRemoveDomain
     }, () => {
         saveSettings();

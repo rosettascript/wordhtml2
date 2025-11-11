@@ -235,6 +235,16 @@
     gap: var(--spacing-2);
 }
 
+.checkbox-label.checkbox-sub-option {
+    margin-left: var(--spacing-4);
+    font-size: 0.7rem;
+    color: var(--muted-foreground);
+}
+
+.checkbox-label.checkbox-sub-option:hover {
+    color: var(--accent);
+}
+
 /* ========================================
    CSS EDITOR
    ======================================== */

@@ -465,6 +465,7 @@ const ShopifyTransformer = {
     convertSourcesListToParagraphs(html, options = {}) {
         const tempDiv = HtmlParser.parseHTML(html);
         const disableSources = !!options.sopDisableSources;
+        const applyInlineItalic = !!options.sopStyleSourcesLi;
         const addBrBeforeSources = !!options.sopAddBrBeforeSources;
         
         // Find all paragraphs
@@ -505,21 +506,23 @@ const ShopifyTransformer = {
                                         return;
                                     }
 
-                                    // Apply italic styling directly to list item
-                                    if (li.style) {
-                                        li.style.fontStyle = 'italic';
-                                    } else {
-                                        li.setAttribute('style', 'font-style: italic;');
+                                    if (!/^<em[\s>]/i.test(originalHTML) || !/<\/em>\s*$/i.test(originalHTML)) {
+                                        li.innerHTML = `<em>${originalHTML}</em>`;
                                     }
 
-                            if (!/^<em[\s>]/i.test(originalHTML) || !/<\/em>\s*$/i.test(originalHTML)) {
-                                li.innerHTML = `<em>${originalHTML}</em>`;
-                            }
+                                    if (applyInlineItalic) {
+                                        li.style.fontStyle = 'italic';
+                                    } else {
+                                        li.style.removeProperty('font-style');
+                                        if (!li.getAttribute('style')) {
+                                            li.removeAttribute('style');
+                                        }
+                                    }
                                 });
 
                                 this.removeBrFromList(current);
                                 let number = listItems.length;
-                                number = this.appendTrailingSourcesToList(current, number, { italicizeListItem: true });
+                                number = this.appendTrailingSourcesToList(current, number, { italicizeListItem: applyInlineItalic });
                                 this.removeTrailingBrNodes(current);
                                 break;
                             } else {
@@ -681,12 +684,18 @@ const ShopifyTransformer = {
             }
 
             const li = document.createElement('li');
-            const em = document.createElement('em');
-            li.appendChild(em);
 
-            segment.forEach(node => {
-                em.appendChild(node);
-            });
+            if (italicizeListItem) {
+                const em = document.createElement('em');
+                li.appendChild(em);
+                segment.forEach(node => {
+                    em.appendChild(node);
+                });
+            } else {
+                segment.forEach(node => {
+                    li.appendChild(node);
+                });
+            }
 
             this.removeBrFromListItem(li);
 
@@ -696,14 +705,14 @@ const ShopifyTransformer = {
                 if (!/^<em[\s>]/i.test(originalHTML) || !/<\/em>\s*$/i.test(originalHTML)) {
                     li.innerHTML = `<em>${originalHTML}</em>`;
                 }
-                listNode.appendChild(li);
             } else {
-                if (!/^<em[\s>]/i.test(li.innerHTML) || !/<\/em>\s*$/i.test(li.innerHTML)) {
-                    const inner = li.innerHTML.trim();
-                    li.innerHTML = `<em>${inner}</em>`;
+                li.style.fontStyle = '';
+                if (li.getAttribute('style') && li.getAttribute('style').trim() === '') {
+                    li.removeAttribute('style');
                 }
-                listNode.appendChild(li);
             }
+
+            listNode.appendChild(li);
             currentNumber += 1;
         });
 
